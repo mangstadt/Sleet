@@ -13,7 +13,8 @@ Do a Maven package:
     
 #Running
 
-1. Edit the log file location in `dist/sleet/conf/logging.properties`
+1. Edit the log file location in "dist/sleet/conf/logging.properties".
+1. Edit "dist/sleet/bin/start.sh" to use the host name of your server ("--hostName" argument).
 1. `cd dist/sleet/bin`
 1. `chmod 744 start.sh`
 1. `./start.sh`
