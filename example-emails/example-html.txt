@@ -1,0 +1,69 @@
+In this example, the message body has HTML in it, along with a smily emoticon image.
+
+S: 220 localhost ESMTP Sleet
+C: EHLO mail-tul01m020-f177.google.com
+S: 250-localhost Hello mail-tul01m020-f177.google.com
+S: 250-SIZE 1000000
+S: 250 HELP
+C: MAIL FROM:<mike.angstadt@gmail.com>
+S: 250 Ok
+C: RCPT TO:<test@68.80.246.118>
+S: 250 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Received: by obcuz6 with SMTP id uz6so4995131obc.22
+C:         for <test@68.80.246.118>; Thu, 16 Feb 2012 14:44:33 -0800 (PST)
+C: DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+C:         d=gmail.com; s=gamma;
+C:         h=mime-version:x-goomoji-body:date:message-id:subject:from:to
+C:          :content-type;
+C:         bh=9vHRvf0VXjSX8LcMH5O+uuo6EzCb8pP3PgM2mx8F7Wk=;
+C:         b=D2yG/RivRBdIwN6ET1qxuhwVl51rqDwKbCiaWrRG43cnl9tPZtVVPbRi8RVh7pO4GD
+C:          GoVxE5kfKgzpehf9z9F9mf4PZkvWDkxF18NqjWTTeoooWMpGpqR3oGQCxtHrYzoVJzyC
+C:          X+SLd1e/FpWj67k1TYbq8SjkXgW4gMSd9liag=
+C: MIME-Version: 1.0
+C: Received: by 10.182.110.104 with SMTP id hz8mr3085540obb.77.1329432273457;
+C:  Thu, 16 Feb 2012 14:44:33 -0800 (PST)
+C: Received: by 10.60.52.199 with HTTP; Thu, 16 Feb 2012 14:44:33 -0800 (PST)
+C: X-Goomoji-Body: true
+C: Date: Thu, 16 Feb 2012 17:44:33 -0500
+C: Message-ID: <CAJNb_g0fXXLwgteEP2TY4CpgXziAO_r6omJaS_bDmQ3JAU5Y0g@mail.gmail.com>
+C: Subject: HTML Test
+C: From: Michael Angstadt <mike.angstadt@gmail.com>
+C: To: test@68.80.246.118
+C: Content-Type: multipart/related; boundary=f46d0444ea0d6991ba04b91c92e6
+C: 
+C: --f46d0444ea0d6991ba04b91c92e6
+C: Content-Type: multipart/alternative; boundary=f46d0444ea0d6991b904b91c92e5
+C: 
+C: --f46d0444ea0d6991b904b91c92e5
+C: Content-Type: text/plain; charset=ISO-8859-1
+C: 
+C: This post has *HTML* in it [?]
+C: 
+C: Link to my website <http://www.mangst.com>.
+C: 
+C: --f46d0444ea0d6991b904b91c92e5
+C: Content-Type: text/html; charset=ISO-8859-1
+C: Content-Transfer-Encoding: quoted-printable
+C: 
+C: This post<font color=3D"#ff0000"> has <b>HTML</b></font> in it=A0<img src=
+C: =3D"cid:330@goomoji.gmail" style=3D"margin-top: 0px; margin-right: 0.2ex; m=
+C: argin-bottom: 0px; margin-left: 0.2ex; vertical-align: middle; " goomoji=3D=
+C: "330"><div>
+C: <br></div><div>Link to <a href=3D"http://www.mangst.com">my website</a>.</d=
+C: iv>
+C: 
+C: --f46d0444ea0d6991b904b91c92e5--
+C: --f46d0444ea0d6991ba04b91c92e6
+C: Content-Type: image/gif; name="330.gif"
+C: Content-Transfer-Encoding: base64
+C: X-Attachment-Id: 330@goomoji.gmail
+C: Content-ID: <330@goomoji.gmail>
+C: 
+C: R0lGODlhDAAMAKIFAF5LAP/zxAAAANyuAP/gaP///wAAAAAAACH5BAEAAAUALAAAAAAMAAwAAAMl
+C: WLPcGjDKFYi9lxKBOaGcF35DhWHamZUW0K4mAbiwWtuf0uxFAgA7
+C: --f46d0444ea0d6991ba04b91c92e6--
+C: .
+C: QUIT
+S: 221 Bye

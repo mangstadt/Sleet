@@ -1,0 +1,69 @@
+This email has an attachment
+
+S: 220 localhost ESMTP Sleet
+C: EHLO mail-tul01m020-f177.google.com
+S: 250-localhost Hello mail-tul01m020-f177.google.com
+S: 250-SIZE 1000000
+S: 250 HELP
+C: MAIL FROM:<mike.angstadt@gmail.com>
+S: 250 Ok
+C: RCPT TO:<test@68.80.246.118>
+S: 250 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Received: by obcuz6 with SMTP id uz6so5003331obc.22
+C:         for <test@68.80.246.118>; Thu, 16 Feb 2012 14:50:39 -0800 (PST)
+C: DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+C:         d=gmail.com; s=gamma;
+C:         h=mime-version:date:message-id:subject:from:to:content-type;
+C:         bh=49hhLbZpr/96y2R0hmpALxYxEsOEbcKieYkk1jiIu0I=;
+C:         b=itrzEpyEFml1vRrrNWDO1wwFH1NUQqjLg2SeBcZsrzqjeMyirE6LojW9YfUB9H8g6W
+C:          g+MW6hQE7HtaY48SLlmTxOgE7PIFRpBzOOQZ8LeGg33GMlM9OP0UXggJooXsudIRGGNo
+C:          +nM5gp0rTfPsb+HXxg/c4TUP8nfUtXuYJfEYc=
+C: MIME-Version: 1.0
+C: Received: by 10.182.110.104 with SMTP id hz8mr3101688obb.77.1329432639592;
+C:  Thu, 16 Feb 2012 14:50:39 -0800 (PST)
+C: Received: by 10.60.52.199 with HTTP; Thu, 16 Feb 2012 14:50:39 -0800 (PST)
+C: Date: Thu, 16 Feb 2012 17:50:39 -0500
+C: Message-ID: <CAJNb_g3nYMQLDSNtSFU7M2ZNeO0LnD4Ws+LSjx3xNhE1N1L7iw@mail.gmail.com>
+C: Subject: Test Attachment
+C: From: Michael Angstadt <mike.angstadt@gmail.com>
+C: To: test@68.80.246.118
+C: Content-Type: multipart/mixed; boundary=f46d0444ea0d3c584204b91ca83e
+C: 
+C: --f46d0444ea0d3c584204b91ca83e
+C: Content-Type: multipart/alternative; boundary=f46d0444ea0d3c583e04b91ca83c
+C: 
+C: --f46d0444ea0d3c583e04b91ca83c
+C: Content-Type: text/plain; charset=ISO-8859-1
+C: 
+C: Testing an attachment
+C: 
+C: --f46d0444ea0d3c583e04b91ca83c
+C: Content-Type: text/html; charset=ISO-8859-1
+C: 
+C: Testing an attachment
+C: 
+C: --f46d0444ea0d3c583e04b91ca83c--
+C: --f46d0444ea0d3c584204b91ca83e
+C: Content-Type: image/gif; name="coffee-icon.gif"
+C: Content-Disposition: attachment; filename="coffee-icon.gif"
+C: Content-Transfer-Encoding: base64
+C: X-Attachment-Id: f_gyqduwb30
+C: 
+C: R0lGODlhDwAPAKIGAJh3ANyuAP/VMv/ql////15LAP///wAAACH/C05FVFNDQVBFMi4wAwEAAAAh
+C: +QQJHgAGACwAAAAADwAPAAADQ2g2yqsQCjVNjTAobTi2VPg55FecaHpCBTG88CAIqFEIQa4HAFC8
+C: J1fsNTsNgkMi7YZMFnPNYXFlU6VMshmu8FFYPwkAIfkECR4ABgAsAAAAAA8ADwAAA0JoJsqrEAY1
+C: TY3QaQyH8gbIjVhhnqgJFcTgvoMgnEYhBHgeAEDhmi2YS2YaAIXDme2IJOKYQqKqlkJxfDJZoECq
+C: chIAIfkECR4ABgAsAAAAAA8ADwAAA0JoFsqrEAo1TY1wKG04/uAmdl9hnqgJFcTgvoMgnEYhBHge
+C: AEDhmi2YS2YaAIXDme2IJOKYQqKqlkKVYrJbIVT9JAAAIfkECR4ABgAsAAAAAA8ADwAAAz9oJsqr
+C: EA41TY0468q1+1khjqQIFcSgroMgjEYhBHQdAEChiimruqIBz/d7yYZEIA3pA5piJVKo5ZoVNFAp
+C: JgEAIfkECR4ABgAsAAAAAA8ADwAAA0JoNsqrMMoZnaVGKJ1pUJ8RRkVpniVUEEPrDoJgGoUQ3HgA
+C: AEVbsq9WrDT4BYWymvE4vC2DwxQNdZr0YrFAAUOdJAAAIfkEBR4ABgAsAAAAAA8ADwAAA0Joutw6
+C: LzolqJ1BZbNbNd/HFGRpkktBDGw7CEJpFEJg3wEAFCy5uiwYaeADBmO0olFoUwKFqNnJ5ODBYIHC
+C: REptJAAAOw==
+C: --f46d0444ea0d3c584204b91ca83e--
+C: .
+S: 250 Ok: queued as 4
+C: QUIT
+S: 221 Bye

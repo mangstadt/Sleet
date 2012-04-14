@@ -1,0 +1,46 @@
+S: 220 localhost ESMTP Sleet
+C: EHLO mail-tul01m020-f177.google.com
+S: 250-localhost Hello mail-tul01m020-f177.google.com
+S: 250-SIZE 1000000
+S: 250 HELP
+C: MAIL FROM:<mike.angstadt@gmail.com>
+S: 250 Ok
+C: RCPT TO:<test@68.80.246.118>
+S: 250 Ok
+C: DATA
+S: 354 End data with <CR><LF>.<CR><LF>
+C: Received: by obcuz6 with SMTP id uz6so4984472obc.22
+C:         for <test@68.80.246.118>; Thu, 16 Feb 2012 14:35:23 -0800 (PST)
+C: DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+C:         d=gmail.com; s=gamma;
+C:         h=mime-version:date:message-id:subject:from:to:content-type;
+C:         bh=0CvGiQq83OOJFiLivLNKIai9vASet/HdR7h6vxnk2OM=;
+C:         b=mtJbIZWu5O64ghI5sD/Ydcz4S+iyn9IPCWpQ236akB9KkTg/F6QpeBQuNabwZNo6O2
+C:          BzDJcnA3y9VBU+gsPOjSsznFZhDgYPn3GAn2o0RQ0/jdG9Rd+uLb4tl435EiK0OquEej
+C:          PTcrS9WCXM9sKfeninWkKzu7UQSBJWpjozdK4=
+C: MIME-Version: 1.0
+C: Received: by 10.182.110.104 with SMTP id hz8mr3067562obb.77.1329431723819;
+C:  Thu, 16 Feb 2012 14:35:23 -0800 (PST)
+C: Received: by 10.60.52.199 with HTTP; Thu, 16 Feb 2012 14:35:23 -0800 (PST)
+C: Date: Thu, 16 Feb 2012 17:35:23 -0500
+C: Message-ID: <CAJNb_g0=dsez-24TnCTFQc_cr_oyXW1+FAi4yJKWHEDpQ3mNRw@mail.gmail.com>
+C: Subject: test2
+C: From: Michael Angstadt <mike.angstadt@gmail.com>
+C: To: test@68.80.246.118
+C: Content-Type: multipart/alternative; boundary=f46d0444ea0da6c15204b91c7155
+C: 
+C: --f46d0444ea0da6c15204b91c7155
+C: Content-Type: text/plain; charset=ISO-8859-1
+C: 
+C: test2
+C: 
+C: --f46d0444ea0da6c15204b91c7155
+C: Content-Type: text/html; charset=ISO-8859-1
+C: 
+C: test2
+C: 
+C: --f46d0444ea0da6c15204b91c7155--
+C: .
+S: 250 Ok: queued as 0
+C: QUIT
+S: 221 Bye

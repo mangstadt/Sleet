@@ -1,0 +1,261 @@
+Started: 2012-Apr-09 10:03:54
+Ended: 2012-Apr-09 10:03:55
+Time elapsed: 0.94s
+S [2012-Apr-09 10:03:54]: 220 mangstadt.dyndns.org ESMTP Sleet v0.1 Ready to receive mail.
+C [2012-Apr-09 10:03:54]: EHLO mx0a-00034b01.pphosted.com
+S [2012-Apr-09 10:03:54]: 250-mangstadt.dyndns.org Hello mx0a-00034b01.pphosted.com
+S [2012-Apr-09 10:03:54]: 250 SIZE 1000000
+C [2012-Apr-09 10:03:54]: MAIL From:<Payne.Matthew@pennmutual.com> SIZE=10760
+S [2012-Apr-09 10:03:54]: 250 Ok
+C [2012-Apr-09 10:03:54]: RCPT To:<test@mangstadt.dyndns.org>
+S [2012-Apr-09 10:03:54]: 250 Ok
+C [2012-Apr-09 10:03:54]: DATA
+S [2012-Apr-09 10:03:54]: 354 Ready.
+C [2012-Apr-09 10:03:54]: Received: from pps.filterd (m0001720 [127.0.0.1])
+C [2012-Apr-09 10:03:54]: 	by mx0a-00034b01.pphosted.com (8.14.3/8.14.3) with SMTP id q39E0CtU019409
+C [2012-Apr-09 10:03:54]: 	for <test@mangstadt.dyndns.org>; Mon, 9 Apr 2012 07:03:51 -0700
+C [2012-Apr-09 10:03:54]: Received: from excas2.pennmutual.com ([12.104.97.248])
+C [2012-Apr-09 10:03:54]: 	by mx0a-00034b01.pphosted.com with ESMTP id 1440va83bj-5
+C [2012-Apr-09 10:03:54]: 	(version=TLSv1/SSLv3 cipher=AES128-SHA bits=128 verify=NOT)
+C [2012-Apr-09 10:03:54]: 	for <test@mangstadt.dyndns.org>; Mon, 09 Apr 2012 07:03:51 -0700
+C [2012-Apr-09 10:03:54]: Received: from EXMB3.pennmutual.com ([fe80::e444:1457:e186:9652]) by
+C [2012-Apr-09 10:03:54]:  EXCAS2.pennmutual.com ([fe80::b802:8381:ea1a:6913%13]) with mapi id
+C [2012-Apr-09 10:03:54]:  14.01.0289.001; Mon, 9 Apr 2012 10:03:48 -0400
+C [2012-Apr-09 10:03:54]: From: "Payne, Matthew" <Payne.Matthew@pennmutual.com>
+C [2012-Apr-09 10:03:54]: To: "test@mangstadt.dyndns.org" <test@mangstadt.dyndns.org>
+C [2012-Apr-09 10:03:54]: CC: "Angstadt, Michael" <Angstadt.Michael@pennmutual.com>
+C [2012-Apr-09 10:03:54]: Subject: FW: SMTP server
+C [2012-Apr-09 10:03:54]: Thread-Topic: SMTP server
+C [2012-Apr-09 10:03:54]: Thread-Index: Ac0T+ZOLsvdHiR6vR3mw9rq/VP7MRgACMNEgAJXHb0AAAATGUA==
+C [2012-Apr-09 10:03:54]: Date: Mon, 9 Apr 2012 14:03:48 +0000
+C [2012-Apr-09 10:03:54]: Message-ID: <4D33214E1D456D4CB5CB12AFF30417D0127C9A54@EXMB3.pennmutual.com>
+C [2012-Apr-09 10:03:54]: Accept-Language: en-US
+C [2012-Apr-09 10:03:54]: Content-Language: en-US
+C [2012-Apr-09 10:03:54]: X-MS-Has-Attach: 
+C [2012-Apr-09 10:03:54]: X-MS-TNEF-Correlator: 
+C [2012-Apr-09 10:03:54]: x-originating-ip: [172.16.64.168]
+C [2012-Apr-09 10:03:54]: Content-Type: multipart/alternative;
+C [2012-Apr-09 10:03:54]: 	boundary="_000_4D33214E1D456D4CB5CB12AFF30417D0127C9A54EXMB3pennmutual_"
+C [2012-Apr-09 10:03:54]: MIME-Version: 1.0
+C [2012-Apr-09 10:03:54]: X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10432:5.6.7498,1.0.260,0.0.0000
+C [2012-Apr-09 10:03:54]:  definitions=2012-04-09_03:2012-04-09,2012-04-09,1970-01-01 signatures=0
+C [2012-Apr-09 10:03:54]: X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 suspectscore=1
+C [2012-Apr-09 10:03:54]:  phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+C [2012-Apr-09 10:03:54]:  engine=6.0.2-1203120001 definitions=main-1204090124
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: --_000_4D33214E1D456D4CB5CB12AFF30417D0127C9A54EXMB3pennmutual_
+C [2012-Apr-09 10:03:54]: Content-Transfer-Encoding: quoted-printable
+C [2012-Apr-09 10:03:54]: Content-Type: text/plain; charset="ISO-8859-1"
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: Another test email
+C [2012-Apr-09 10:03:54]: From: Angstadt, Michael
+C [2012-Apr-09 10:03:54]: Sent: Monday, April 09, 2012 10:03 AM
+C [2012-Apr-09 10:03:54]: To: Payne, Matthew
+C [2012-Apr-09 10:03:54]: Subject: RE: SMTP server
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: Matt can you send another email thanks
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: From: Payne, Matthew
+C [2012-Apr-09 10:03:54]: Sent: Friday, April 06, 2012 10:34 AM
+C [2012-Apr-09 10:03:54]: To: Angstadt, Michael
+C [2012-Apr-09 10:03:54]: Subject: RE: SMTP server
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: Sent one.
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: From: Angstadt, Michael
+C [2012-Apr-09 10:03:54]: Sent: Friday, April 06, 2012 9:32 AM
+C [2012-Apr-09 10:03:54]: To: Payne, Matthew; Boykis, Daniil
+C [2012-Apr-09 10:03:54]: Subject: SMTP server
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: Guys can you send an email or two to test@mangstadt.dyndns.org<mailto:test@=
+C [2012-Apr-09 10:03:54]: mangstadt.dyndns.org>?  You can put anything in the body/subject, like "Thi=
+C [2012-Apr-09 10:03:54]: s is a test".  I wrote an SMTP server and I want to test it.  Thanks.
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: This message, including any attachments, is intended only for the recipient=
+C [2012-Apr-09 10:03:54]: (s) named above. It may contain confidential and privileged information. If=
+C [2012-Apr-09 10:03:54]:  you have received this communication in error, please notify the sender im=
+C [2012-Apr-09 10:03:54]: mediately and destroy or delete the original message. Also, please be aware=
+C [2012-Apr-09 10:03:54]:  that if you are not the intended recipient, any review, disclosure, copyin=
+C [2012-Apr-09 10:03:54]: g, distribution or any action or reliance based on this message is prohibit=
+C [2012-Apr-09 10:03:54]: ed by law.
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: --_000_4D33214E1D456D4CB5CB12AFF30417D0127C9A54EXMB3pennmutual_
+C [2012-Apr-09 10:03:54]: Content-Transfer-Encoding: quoted-printable
+C [2012-Apr-09 10:03:54]: Content-Type: text/html; charset="ISO-8859-1"
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: <html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+C [2012-Apr-09 10:03:54]: osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+C [2012-Apr-09 10:03:54]: xmlns:x=3D"urn:schemas-microsoft-com:office:excel" xmlns:p=3D"urn:schemas-m=
+C [2012-Apr-09 10:03:54]: icrosoft-com:office:powerpoint" xmlns:a=3D"urn:schemas-microsoft-com:office=
+C [2012-Apr-09 10:03:54]: :access" xmlns:dt=3D"uuid:C2F41010-65B3-11d1-A29F-00AA00C14882" xmlns:s=3D"=
+C [2012-Apr-09 10:03:54]: uuid:BDC6E3F0-6DA3-11d1-A2A3-00AA00C14882" xmlns:rs=3D"urn:schemas-microsof=
+C [2012-Apr-09 10:03:54]: t-com:rowset" xmlns:z=3D"#RowsetSchema" xmlns:b=3D"urn:schemas-microsoft-co=
+C [2012-Apr-09 10:03:54]: m:office:publisher" xmlns:ss=3D"urn:schemas-microsoft-com:office:spreadshee=
+C [2012-Apr-09 10:03:54]: t" xmlns:c=3D"urn:schemas-microsoft-com:office:component:spreadsheet" xmlns=
+C [2012-Apr-09 10:03:54]: :odc=3D"urn:schemas-microsoft-com:office:odc" xmlns:oa=3D"urn:schemas-micro=
+C [2012-Apr-09 10:03:54]: soft-com:office:activation" xmlns:html=3D"http://www.w3.org/TR/REC-html40" =
+C [2012-Apr-09 10:03:54]: xmlns:q=3D"http://schemas.xmlsoap.org/soap/envelope/" xmlns:rtc=3D"http://m=
+C [2012-Apr-09 10:03:54]: icrosoft.com/officenet/conferencing" xmlns:D=3D"DAV:" xmlns:Repl=3D"http://=
+C [2012-Apr-09 10:03:54]: schemas.microsoft.com/repl/" xmlns:mt=3D"http://schemas.microsoft.com/share=
+C [2012-Apr-09 10:03:54]: point/soap/meetings/" xmlns:x2=3D"http://schemas.microsoft.com/office/excel=
+C [2012-Apr-09 10:03:54]: /2003/xml" xmlns:ppda=3D"http://www.passport.com/NameSpace.xsd" xmlns:ois=
+C [2012-Apr-09 10:03:54]: =3D"http://schemas.microsoft.com/sharepoint/soap/ois/" xmlns:dir=3D"http://=
+C [2012-Apr-09 10:03:54]: schemas.microsoft.com/sharepoint/soap/directory/" xmlns:ds=3D"http://www.w3=
+C [2012-Apr-09 10:03:54]: ..org/2000/09/xmldsig#" xmlns:dsp=3D"http://schemas.microsoft.com/sharepoint=
+C [2012-Apr-09 10:03:54]: /dsp" xmlns:udc=3D"http://schemas.microsoft.com/data/udc" xmlns:xsd=3D"http=
+C [2012-Apr-09 10:03:54]: ://www.w3.org/2001/XMLSchema" xmlns:sub=3D"http://schemas.microsoft.com/sha=
+C [2012-Apr-09 10:03:54]: repoint/soap/2002/1/alerts/" xmlns:ec=3D"http://www.w3.org/2001/04/xmlenc#"=
+C [2012-Apr-09 10:03:54]:  xmlns:sp=3D"http://schemas.microsoft.com/sharepoint/" xmlns:sps=3D"http://=
+C [2012-Apr-09 10:03:54]: schemas.microsoft.com/sharepoint/soap/" xmlns:xsi=3D"http://www.w3.org/2001=
+C [2012-Apr-09 10:03:54]: /XMLSchema-instance" xmlns:udcs=3D"http://schemas.microsoft.com/data/udc/so=
+C [2012-Apr-09 10:03:54]: ap" xmlns:udcxf=3D"http://schemas.microsoft.com/data/udc/xmlfile" xmlns:udc=
+C [2012-Apr-09 10:03:54]: p2p=3D"http://schemas.microsoft.com/data/udc/parttopart" xmlns:wf=3D"http:/=
+C [2012-Apr-09 10:03:54]: /schemas.microsoft.com/sharepoint/soap/workflow/" xmlns:dsss=3D"http://sche=
+C [2012-Apr-09 10:03:54]: mas.microsoft.com/office/2006/digsig-setup" xmlns:dssi=3D"http://schemas.mi=
+C [2012-Apr-09 10:03:54]: crosoft.com/office/2006/digsig" xmlns:mdssi=3D"http://schemas.openxmlformat=
+C [2012-Apr-09 10:03:54]: s.org/package/2006/digital-signature" xmlns:mver=3D"http://schemas.openxmlf=
+C [2012-Apr-09 10:03:54]: ormats.org/markup-compatibility/2006" xmlns:m=3D"http://schemas.microsoft.c=
+C [2012-Apr-09 10:03:54]: om/office/2004/12/omml" xmlns:mrels=3D"http://schemas.openxmlformats.org/pa=
+C [2012-Apr-09 10:03:54]: ckage/2006/relationships" xmlns:spwp=3D"http://microsoft.com/sharepoint/web=
+C [2012-Apr-09 10:03:54]: partpages" xmlns:ex12t=3D"http://schemas.microsoft.com/exchange/services/20=
+C [2012-Apr-09 10:03:54]: 06/types" xmlns:ex12m=3D"http://schemas.microsoft.com/exchange/services/200=
+C [2012-Apr-09 10:03:54]: 6/messages" xmlns:pptsl=3D"http://schemas.microsoft.com/sharepoint/soap/Sli=
+C [2012-Apr-09 10:03:54]: deLibrary/" xmlns:spsl=3D"http://microsoft.com/webservices/SharePointPortal=
+C [2012-Apr-09 10:03:54]: Server/PublishedLinksService" xmlns:Z=3D"urn:schemas-microsoft-com:" xmlns:=
+C [2012-Apr-09 10:03:54]: st=3D"&#1;" xmlns=3D"http://www.w3.org/TR/REC-html40">
+C [2012-Apr-09 10:03:54]: <head>
+C [2012-Apr-09 10:03:54]: <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">
+C [2012-Apr-09 10:03:54]: <meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+C [2012-Apr-09 10:03:54]: <style><!--
+C [2012-Apr-09 10:03:54]: /* Font Definitions */
+C [2012-Apr-09 10:03:54]: @font-face
+C [2012-Apr-09 10:03:54]: 	{font-family:Calibri;
+C [2012-Apr-09 10:03:54]: 	panose-1:2 15 5 2 2 2 4 3 2 4;}
+C [2012-Apr-09 10:03:54]: @font-face
+C [2012-Apr-09 10:03:54]: 	{font-family:Tahoma;
+C [2012-Apr-09 10:03:54]: 	panose-1:2 11 6 4 3 5 4 4 2 4;}
+C [2012-Apr-09 10:03:54]: /* Style Definitions */
+C [2012-Apr-09 10:03:54]: p.MsoNormal, li.MsoNormal, div.MsoNormal
+C [2012-Apr-09 10:03:54]: 	{margin:0in;
+C [2012-Apr-09 10:03:54]: 	margin-bottom:.0001pt;
+C [2012-Apr-09 10:03:54]: 	font-size:11.0pt;
+C [2012-Apr-09 10:03:54]: 	font-family:"Calibri","sans-serif";}
+C [2012-Apr-09 10:03:54]: a:link, span.MsoHyperlink
+C [2012-Apr-09 10:03:54]: 	{mso-style-priority:99;
+C [2012-Apr-09 10:03:54]: 	color:blue;
+C [2012-Apr-09 10:03:54]: 	text-decoration:underline;}
+C [2012-Apr-09 10:03:54]: a:visited, span.MsoHyperlinkFollowed
+C [2012-Apr-09 10:03:54]: 	{mso-style-priority:99;
+C [2012-Apr-09 10:03:54]: 	color:purple;
+C [2012-Apr-09 10:03:54]: 	text-decoration:underline;}
+C [2012-Apr-09 10:03:54]: span.EmailStyle17
+C [2012-Apr-09 10:03:54]: 	{mso-style-type:personal;
+C [2012-Apr-09 10:03:54]: 	font-family:"Calibri","sans-serif";
+C [2012-Apr-09 10:03:54]: 	color:windowtext;}
+C [2012-Apr-09 10:03:54]: span.EmailStyle18
+C [2012-Apr-09 10:03:54]: 	{mso-style-type:personal;
+C [2012-Apr-09 10:03:54]: 	font-family:"Calibri","sans-serif";
+C [2012-Apr-09 10:03:54]: 	color:#1F497D;}
+C [2012-Apr-09 10:03:54]: span.EmailStyle19
+C [2012-Apr-09 10:03:54]: 	{mso-style-type:personal;
+C [2012-Apr-09 10:03:54]: 	font-family:"Calibri","sans-serif";
+C [2012-Apr-09 10:03:54]: 	color:#1F497D;}
+C [2012-Apr-09 10:03:54]: span.EmailStyle20
+C [2012-Apr-09 10:03:54]: 	{mso-style-type:personal-reply;
+C [2012-Apr-09 10:03:54]: 	font-family:"Calibri","sans-serif";
+C [2012-Apr-09 10:03:54]: 	color:#1F497D;}
+C [2012-Apr-09 10:03:54]: ..MsoChpDefault
+C [2012-Apr-09 10:03:54]: 	{mso-style-type:export-only;
+C [2012-Apr-09 10:03:54]: 	font-size:10.0pt;}
+C [2012-Apr-09 10:03:54]: @page WordSection1
+C [2012-Apr-09 10:03:54]: 	{size:8.5in 11.0in;
+C [2012-Apr-09 10:03:54]: 	margin:1.0in 1.0in 1.0in 1.0in;}
+C [2012-Apr-09 10:03:54]: div.WordSection1
+C [2012-Apr-09 10:03:54]: 	{page:WordSection1;}
+C [2012-Apr-09 10:03:54]: --></style><!--[if gte mso 9]><xml>
+C [2012-Apr-09 10:03:54]: <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+C [2012-Apr-09 10:03:54]: </xml><![endif]--><!--[if gte mso 9]><xml>
+C [2012-Apr-09 10:03:54]: <o:shapelayout v:ext=3D"edit">
+C [2012-Apr-09 10:03:54]: <o:idmap v:ext=3D"edit" data=3D"1" />
+C [2012-Apr-09 10:03:54]: </o:shapelayout></xml><![endif]-->
+C [2012-Apr-09 10:03:54]: </head>
+C [2012-Apr-09 10:03:54]: <body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+C [2012-Apr-09 10:03:54]: <div class=3D"WordSection1">
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D"><o:p>&nbsp;</o:p></spa=
+C [2012-Apr-09 10:03:54]: n></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D">Another test email<o:p=
+C [2012-Apr-09 10:03:54]: ></o:p></span></p>
+C [2012-Apr-09 10:03:54]: <div>
+C [2012-Apr-09 10:03:54]: <div style=3D"border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in =
+C [2012-Apr-09 10:03:54]: 0in 0in">
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+C [2012-Apr-09 10:03:54]: ;Tahoma&quot;,&quot;sans-serif&quot;">From:</span></b><span style=3D"font-s=
+C [2012-Apr-09 10:03:54]: ize:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"> Angstadt=
+C [2012-Apr-09 10:03:54]: , Michael
+C [2012-Apr-09 10:03:54]: <br>
+C [2012-Apr-09 10:03:54]: <b>Sent:</b> Monday, April 09, 2012 10:03 AM<br>
+C [2012-Apr-09 10:03:54]: <b>To:</b> Payne, Matthew<br>
+C [2012-Apr-09 10:03:54]: <b>Subject:</b> RE: SMTP server<o:p></o:p></span></p>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D">Matt can you send anot=
+C [2012-Apr-09 10:03:54]: her email thanks<o:p></o:p></span></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D"><o:p>&nbsp;</o:p></spa=
+C [2012-Apr-09 10:03:54]: n></p>
+C [2012-Apr-09 10:03:54]: <div>
+C [2012-Apr-09 10:03:54]: <div style=3D"border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in =
+C [2012-Apr-09 10:03:54]: 0in 0in">
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+C [2012-Apr-09 10:03:54]: ;Tahoma&quot;,&quot;sans-serif&quot;">From:</span></b><span style=3D"font-s=
+C [2012-Apr-09 10:03:54]: ize:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"> Payne, M=
+C [2012-Apr-09 10:03:54]: atthew
+C [2012-Apr-09 10:03:54]: <br>
+C [2012-Apr-09 10:03:54]: <b>Sent:</b> Friday, April 06, 2012 10:34 AM<br>
+C [2012-Apr-09 10:03:54]: <b>To:</b> Angstadt, Michael<br>
+C [2012-Apr-09 10:03:54]: <b>Subject:</b> RE: SMTP server<o:p></o:p></span></p>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D">Sent one.<o:p></o:p></=
+C [2012-Apr-09 10:03:54]: span></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><span style=3D"color:#1F497D"><o:p>&nbsp;</o:p></spa=
+C [2012-Apr-09 10:03:54]: n></p>
+C [2012-Apr-09 10:03:54]: <div>
+C [2012-Apr-09 10:03:54]: <div style=3D"border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in =
+C [2012-Apr-09 10:03:54]: 0in 0in">
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+C [2012-Apr-09 10:03:54]: ;Tahoma&quot;,&quot;sans-serif&quot;">From:</span></b><span style=3D"font-s=
+C [2012-Apr-09 10:03:54]: ize:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"> Angstadt=
+C [2012-Apr-09 10:03:54]: , Michael
+C [2012-Apr-09 10:03:54]: <br>
+C [2012-Apr-09 10:03:54]: <b>Sent:</b> Friday, April 06, 2012 9:32 AM<br>
+C [2012-Apr-09 10:03:54]: <b>To:</b> Payne, Matthew; Boykis, Daniil<br>
+C [2012-Apr-09 10:03:54]: <b>Subject:</b> SMTP server<o:p></o:p></span></p>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+C [2012-Apr-09 10:03:54]: <p class=3D"MsoNormal">Guys can you send an email or two to <a href=3D"mail=
+C [2012-Apr-09 10:03:54]: to:test@mangstadt.dyndns.org">
+C [2012-Apr-09 10:03:54]: test@mangstadt.dyndns.org</a>?&nbsp; You can put anything in the body/subje=
+C [2012-Apr-09 10:03:54]: ct, like &#8220;This is a test&#8221;.&nbsp; I wrote an SMTP server and I w=
+C [2012-Apr-09 10:03:54]: ant to test it.&nbsp; Thanks.<o:p></o:p></p>
+C [2012-Apr-09 10:03:54]: </div>
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: <DIV>
+C [2012-Apr-09 10:03:54]: This message, including any attachments, is intended only for the recipient=
+C [2012-Apr-09 10:03:54]: (s) named above. It may contain confidential and privileged information. If=
+C [2012-Apr-09 10:03:54]:  you have received this communication in error, please notify the sender im=
+C [2012-Apr-09 10:03:54]: mediately and destroy or delete the original message. Also, please be aware=
+C [2012-Apr-09 10:03:54]:  that if you are not the intended recipient, any review, disclosure, copyin=
+C [2012-Apr-09 10:03:54]: g, distribution or any action or reliance based on this message is prohibit=
+C [2012-Apr-09 10:03:54]: ed by law.<BR>
+C [2012-Apr-09 10:03:54]: </DIV></body>
+C [2012-Apr-09 10:03:54]: </html>
+C [2012-Apr-09 10:03:54]: 
+C [2012-Apr-09 10:03:54]: --_000_4D33214E1D456D4CB5CB12AFF30417D0127C9A54EXMB3pennmutual_--
+C [2012-Apr-09 10:03:54]: .
+S [2012-Apr-09 10:03:55]: 250 Ok: queued as 4
+C [2012-Apr-09 10:03:55]: QUIT
+S [2012-Apr-09 10:03:55]: 221 Bye

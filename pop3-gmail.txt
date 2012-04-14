@@ -1,0 +1,2 @@
+#"telnet" can't be used because GMail requires all POP3 connections be over SSL
+openssl s_client -connect pop.gmail.com:995
