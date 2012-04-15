@@ -4,7 +4,7 @@ sleet.Sleet \
 --hostName=mangstadt.dyndns.org \
 --smtpPort=2550 \
 --pop3Port=2551 \
---database=../db \
+--database=../db/dirby \
 --smtp-server-log=../logs/smtp-transactions.log \
 --smtp-client-log=../logs/smtp-client-transactions.log \
 --pop3-log=../logs/pop3-transactions.log
