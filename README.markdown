@@ -18,7 +18,7 @@ Do a Maven package:
 1. `chmod 744 start.sh`
 1. `./start.sh`
 
-The `start.sh` script will start the Sleet SMTP server on port 2550.  POP3 will run on port 2551.  To test it out, you can connect to it via telnet:
+The `start.sh` script will start the Sleet SMTP server on port 2550.  POP3 will run on port 2551.  The reason why these non-standard ports are used is that, for some reason, I had trouble opening server sockets to the standard ports on my computer (ports 25 and 110 respectively).  To test it out, you can connect to it via telnet:
 
     telnet localhost <port>
 
