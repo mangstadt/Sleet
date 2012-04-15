@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import sleet.Sleet;
-import sleet.TransactionLog;
 import sleet.db.DbDao;
 import sleet.db.MailingList;
 import sleet.db.MailingListAddress;
@@ -141,28 +140,25 @@ public class SMTPConnectionListener {
 	 */
 	private class SMTPClientThread extends Thread {
 		private final Socket socket;
+		private final SMTPServerSocket serverSocket; 
 
-		public SMTPClientThread(Socket socket) {
+		public SMTPClientThread(Socket socket) throws IOException {
 			this.socket = socket;
+			serverSocket = new SMTPServerSocket(socket.getInputStream(), socket.getOutputStream());
 		}
 
 		@Override
 		public void run() {
-			TransactionLog transactionLog = new TransactionLog();
 			try {
 				Pattern fromPattern = Pattern.compile("FROM:<(.*?)>", Pattern.CASE_INSENSITIVE);
 				Pattern toPattern = Pattern.compile("TO:<(.*?)>", Pattern.CASE_INSENSITIVE);
 
-				//open socket in/out streams
-				ClientReader clientReader = new ClientReader(socket.getInputStream(), transactionLog);
-				ClientWriter clientWriter = new ClientWriter(socket.getOutputStream(), transactionLog);
-
 				boolean ehloSent = false;
 				String remoteHostName = null;
 				EmailRaw email = null;
-				clientWriter.send(220, hostName + " " + Sleet.appName + " v" + Sleet.version + " Ready to receive mail.");
+				serverSocket.sendResponse(220, hostName + " " + Sleet.appName + " v" + Sleet.version + " Ready to receive mail.");
 				SMTPRequest clientMsg;
-				while ((clientMsg = clientReader.next()) != null) {
+				while ((clientMsg = serverSocket.nextRequest()) != null) {
 					ClientCommand cmd;
 					try {
 						cmd = ClientCommand.valueOf(clientMsg.getCommand());
@@ -192,10 +188,10 @@ public class SMTPConnectionListener {
 						msgs.add("NOOP - Does nothing (always returns 250 Ok response)");
 						msgs.add("HELP - Display list of available commands (varies depending on context).");
 						msgs.add("QUIT - End this SMTP session.");
-						clientWriter.send(214, msgs);
+						serverSocket.sendResponse(214, msgs);
 					} else if (cmd == ClientCommand.HELO) {
 						remoteHostName = params;
-						clientWriter.send(250, "Hello " + params);
+						serverSocket.sendResponse(250, "Hello " + params);
 						ehloSent = true;
 						email = null;
 					} else if (cmd == ClientCommand.EHLO) {
@@ -207,12 +203,12 @@ public class SMTPConnectionListener {
 						messages.add("HELP");
 						//messages.add("EXPN");
 						//TODO RFC-5321 p.25 - say that EXPN is supported
-						clientWriter.send(250, messages);
+						serverSocket.sendResponse(250, messages);
 						email = null;
 					} else if (cmd == ClientCommand.RSET) {
 						if (params != null) {
 							//this command does not have parameters (see RFC 5321 p.55)
-							clientWriter.send(501, "RSET command has no parameters.");
+							serverSocket.sendResponse(501, "RSET command has no parameters.");
 							continue;
 						}
 
@@ -223,9 +219,9 @@ public class SMTPConnectionListener {
 							email = null;
 							msg = "Ok, email transaction aborted.";
 						}
-						clientWriter.send(250, msg);
+						serverSocket.sendResponse(250, msg);
 					} else if (cmd == ClientCommand.NOOP) {
-						clientWriter.send(250, "Ok");
+						serverSocket.sendResponse(250, "Ok");
 					} else if (cmd == ClientCommand.VRFY) {
 						//RFC-5321, p.14: the address "postmaster" is valid, even though it does not have a host associated with it
 						if ("postmaster".equalsIgnoreCase(params)) {
@@ -240,7 +236,7 @@ public class SMTPConnectionListener {
 							//check host
 							String host = addr.getHost();
 							if (!hostName.equalsIgnoreCase(host)) {
-								clientWriter.send(551, "Invalid host name: " + addr);
+								serverSocket.sendResponse(551, "Invalid host name: " + addr);
 								continue;
 							}
 
@@ -248,7 +244,7 @@ public class SMTPConnectionListener {
 							String username = addr.getMailbox();
 							User user = dao.selectUser(username);
 							if (user == null) {
-								clientWriter.send(550, "User not found with given address: " + addr);
+								serverSocket.sendResponse(550, "User not found with given address: " + addr);
 							} else {
 								String msg;
 								if (user.fullName == null) {
@@ -256,14 +252,14 @@ public class SMTPConnectionListener {
 								} else {
 									msg = user.fullName + " <" + user.username + "@" + hostName + ">";
 								}
-								clientWriter.send(250, msg);
+								serverSocket.sendResponse(250, msg);
 							}
 						} else {
 							//search usernames and full names of users
 
 							List<User> users = dao.findUsers(params);
 							if (users.isEmpty()) {
-								clientWriter.send(550, "No users found: " + params);
+								serverSocket.sendResponse(550, "No users found: " + params);
 							} else {
 								List<String> msgs = new ArrayList<String>();
 								msgs.add("User ambiguous.  Possibilities are:");
@@ -277,19 +273,19 @@ public class SMTPConnectionListener {
 								}
 
 								//always use "ambiguous" status code because it's not clear whether the client is searching for a username or the person's real name
-								clientWriter.send(553, msgs);
+								serverSocket.sendResponse(553, msgs);
 							}
 						}
 					} else if (cmd == ClientCommand.EXPN) {
 						String name = params;
 						if (name.isEmpty()) {
-							clientWriter.send(501, "No mailing list specified.");
+							serverSocket.sendResponse(501, "No mailing list specified.");
 							continue;
 						}
 
 						MailingList mailingList = dao.selectMailingList(name);
 						if (mailingList == null || mailingList.addresses.isEmpty()) {
-							clientWriter.send(550, "Mailing list doesn't exist: " + name);
+							serverSocket.sendResponse(550, "Mailing list doesn't exist: " + name);
 						} else {
 							List<String> lines = new ArrayList<String>();
 							for (MailingListAddress address : mailingList.addresses) {
@@ -301,11 +297,11 @@ public class SMTPConnectionListener {
 								}
 								lines.add(msg);
 							}
-							clientWriter.send(250, lines);
+							serverSocket.sendResponse(250, lines);
 						}
 					} else if (cmd == ClientCommand.MAIL) {
 						if (!ehloSent) {
-							clientWriter.send(503, "EHLO required before emails can be received.");
+							serverSocket.sendResponse(503, "EHLO required before emails can be received.");
 							continue;
 						}
 
@@ -313,26 +309,26 @@ public class SMTPConnectionListener {
 						Matcher m = fromPattern.matcher(params);
 						if (m.find()) {
 							if (email != null && email.getMailFrom() != null) {
-								clientWriter.send(503, "\"From\" address already specified.  Use RCPT to define recipients and DATA to define the message body.");
+								serverSocket.sendResponse(503, "\"From\" address already specified.  Use RCPT to define recipients and DATA to define the message body.");
 								continue;
 							}
 
 							String addrStr = m.group(1);
 							EmailAddress addr = new EmailAddress(addrStr);
 							if (!addr.isValid()) {
-								clientWriter.send(501, "Invalid syntax of email address: " + addrStr);
+								serverSocket.sendResponse(501, "Invalid syntax of email address: " + addrStr);
 								continue;
 							}
 
 							email = new EmailRaw();
 							email.setMailFrom(addr);
-							clientWriter.send(250, "Ok");
+							serverSocket.sendResponse(250, "Ok");
 						} else {
-							clientWriter.send(501, "MAIL command must look like: \"MAIL FROM:<mailbox@host>\"");
+							serverSocket.sendResponse(501, "MAIL command must look like: \"MAIL FROM:<mailbox@host>\"");
 						}
 					} else if (cmd == ClientCommand.RCPT) {
 						if (email == null) {
-							clientWriter.send(503, "MAIL command must be used before RCPT can be used");
+							serverSocket.sendResponse(503, "MAIL command must be used before RCPT can be used");
 							continue;
 						}
 
@@ -350,54 +346,54 @@ public class SMTPConnectionListener {
 
 							//check syntax
 							if (!addr.isValid()) {
-								clientWriter.send(501, "Invalid syntax of email address: " + addrStr);
+								serverSocket.sendResponse(501, "Invalid syntax of email address: " + addrStr);
 								continue;
 							}
 
 							//check host name
 							String host = addr.getHost();
 							if (!hostName.equalsIgnoreCase(host)) {
-								clientWriter.send(551, "Invalid host name: " + host);
+								serverSocket.sendResponse(551, "Invalid host name: " + host);
 								continue;
 							}
 
 							//check mailbox
 							String mailbox = addr.getMailbox();
 							if (!dao.doesMailboxExist(mailbox)) {
-								clientWriter.send(550, "Mailbox not found: " + mailbox);
+								serverSocket.sendResponse(550, "Mailbox not found: " + mailbox);
 								continue;
 							}
 
 							email.addRecipient(addr);
-							clientWriter.send(250, "Ok");
+							serverSocket.sendResponse(250, "Ok");
 						} else {
 							//invalid syntax
-							clientWriter.send(501, "RCPT command must look like: \"RCPT TO:<mailbox@" + hostName + ">\"");
+							serverSocket.sendResponse(501, "RCPT command must look like: \"RCPT TO:<mailbox@" + hostName + ">\"");
 							continue;
 						}
 					} else if (cmd == ClientCommand.DATA) {
 						if (email == null) {
-							clientWriter.send(503, "MAIL command must be used before DATA can be sent.");
+							serverSocket.sendResponse(503, "MAIL command must be used before DATA can be sent.");
 							continue;
 						}
 
 						if (params != null) {
 							//this command does not have parameters (see RFC 5321 p.55)
-							clientWriter.send(501, "DATA command has no parameters.");
+							serverSocket.sendResponse(501, "DATA command has no parameters.");
 							continue;
 						}
 
 						if (email.getRecipients().isEmpty()) {
-							clientWriter.send(503, "At least one RCPT (recipient) is required before DATA can be sent.");
+							serverSocket.sendResponse(503, "At least one RCPT (recipient) is required before DATA can be sent.");
 							continue;
 						}
 
 						//get mail message body
-						clientWriter.send(354, "Ready.");
+						serverSocket.sendResponse(354, "Ready.");
 
 						StringBuilder data = new StringBuilder();
 						String dataLine;
-						while ((dataLine = clientReader.nextDataLine()) != null) {
+						while ((dataLine = serverSocket.nextDataLine()) != null) {
 							data.append(dataLine).append(CRLF);
 						}
 						email.setData(new EmailData(data.toString()));
@@ -441,15 +437,15 @@ public class SMTPConnectionListener {
 						//TODO send emails to any mailing lists
 
 						if (error == null) {
-							clientWriter.send(250, "Ok: queued as " + dbEmail.id);
+							serverSocket.sendResponse(250, "Ok: queued as " + dbEmail.id);
 						} else {
-							clientWriter.send(451, "An unexpected server error occurred while saving the email, sorry: " + error.getMessage());
+							serverSocket.sendResponse(451, "An unexpected server error occurred while saving the email, sorry: " + error.getMessage());
 						}
 						email = null;
 					} else if (cmd == ClientCommand.QUIT) {
 						if (params != null) {
 							//this command does not have parameters (see RFC 5321 p.55)
-							clientWriter.send(501, "QUIT command has no parameters.");
+							serverSocket.sendResponse(501, "QUIT command has no parameters.");
 							continue;
 						}
 
@@ -459,10 +455,10 @@ public class SMTPConnectionListener {
 						} else {
 							msg = "Email transaction aborted.  Bye";
 						}
-						clientWriter.send(221, msg);
+						serverSocket.sendResponse(221, msg);
 						break;
 					} else {
-						clientWriter.send(500, "Unknown command: " + clientMsg.getCommand());
+						serverSocket.sendResponse(500, "Unknown command: " + clientMsg.getCommand());
 					}
 				}
 			} catch (Exception e) {
@@ -478,7 +474,7 @@ public class SMTPConnectionListener {
 				if (transactionLogFile != null) {
 					synchronized (transactionLogFile) {
 						try {
-							transactionLog.writeToFile(transactionLogFile);
+							serverSocket.getTransactionLog().writeToFile(transactionLogFile);
 						} catch (IOException e) {
 							logger.log(Level.WARNING, "Problem writing to transaction log file.", e);
 						}
