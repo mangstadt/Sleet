@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import sleet.db.DbDao;
 import sleet.db.DirbyEmbeddedDbDao;
+import sleet.db.DirbyMemoryDbDao;
 import sleet.pop3.POP3ConnectionListener;
 import sleet.smtp.MailSender;
 import sleet.smtp.SMTPConnectionListener;
@@ -50,7 +51,8 @@ public class Sleet {
 			System.out.println();
 
 			System.out.println("--database=PATH");
-			System.out.println("The path to where the database will be stored (defaults to \"sleet-db\").");
+			System.out.println("The path to where the database will be stored or \"MEM\" to use an in-memory");
+			System.out.println("database (defaults to \"sleet-db\").");
 			System.out.println();
 
 			System.out.println("--smtp-server-log=PATH");
@@ -66,7 +68,7 @@ public class Sleet {
 			System.out.println();
 
 			System.out.println("--version");
-			System.out.println("The version.");
+			System.out.println("Prints the version.");
 			System.out.println();
 
 			System.out.println("--help");
@@ -105,8 +107,13 @@ public class Sleet {
 
 		//connect to the database
 		String dbPath = arguments.value(null, "database", "sleet-db");
-		File databaseDir = new File(dbPath);
-		DbDao dao = new DirbyEmbeddedDbDao(databaseDir);
+		DbDao dao;
+		if ("MEM".equals(dbPath)) {
+			dao = new DirbyMemoryDbDao();
+		} else {
+			File databaseDir = new File(dbPath);
+			dao = new DirbyEmbeddedDbDao(databaseDir);
+		}
 
 		//start the mail sender
 		final MailSender mailSender = new MailSender(dao);

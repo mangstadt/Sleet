@@ -38,7 +38,7 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
     This is what's used in email addresses coming from this server.
     
     --database=PATH
-    The path to where the database will be stored (defaults to "sleet-db").
+    The path to where the database will be stored or "MEM" to use an in-memory database. (defaults to "sleet-db").
     
     --smtp-server-log=PATH
     The path to where SMTP transactions that the server receives are logged.
