@@ -160,7 +160,7 @@ public class SMTPConnectionListener {
 				boolean ehloSent = false;
 				String remoteHostName = null;
 				EmailRaw email = null;
-				clientWriter.send(220, hostName + " ESMTP " + Sleet.appName + " v" + Sleet.version + " Ready to receive mail.");
+				clientWriter.send(220, hostName + " " + Sleet.appName + " v" + Sleet.version + " Ready to receive mail.");
 				SMTPRequest clientMsg;
 				while ((clientMsg = clientReader.next()) != null) {
 					ClientCommand cmd;
