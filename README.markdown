@@ -49,7 +49,7 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
     The path to where POP3 transactions that the server receives are logged.
     
     --version
-    The version.
+    Prints the version.
     
     --help
     Prints this help message.
