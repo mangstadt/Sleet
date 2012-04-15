@@ -204,6 +204,7 @@ public class SMTPConnectionListener {
 						List<String> messages = new ArrayList<String>();
 						messages.add(hostName + " Hello" + (params == null ? "" : " " + params));
 						messages.add("SIZE 1000000");
+						messages.add("HELP");
 						//messages.add("EXPN");
 						//TODO RFC-5321 p.25 - say that EXPN is supported
 						clientWriter.send(250, messages);
