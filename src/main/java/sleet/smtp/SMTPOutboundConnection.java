@@ -122,7 +122,7 @@ public class SMTPOutboundConnection {
 		}
 	}
 	
-	public synchronized SendResult sendEmail(List<EmailAddress> recipients, sleet.db.Email email) throws SMTPException, IOException {
+	public SendResult sendEmail(List<EmailAddress> recipients, sleet.db.Email email) throws SMTPException, IOException {
 		SendResult sendResult = new SendResult();
 
 		//from field can be blank (see RPC 5321, p.27-8)
@@ -141,6 +141,8 @@ public class SMTPOutboundConnection {
 				sendResult.failedAddressesMessages.add(response.toString());
 			} else if (response.getStatusCode() != 250){
 				throw new SMTPException("Unexpected server message: " + response);
+			} else {
+				sendResult.successfulAddresses.add(recipient);
 			}
 		}
 

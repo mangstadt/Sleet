@@ -3,8 +3,10 @@ package sleet.smtp;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -72,13 +74,17 @@ public class MailSender {
 	 */
 	private final DbDao dao;
 
+	/**
+	 * The emails that are currently being sent.
+	 */
+	private final Collection<OutboundEmailGroup> beingSentGroups = new LinkedList<OutboundEmailGroup>();
+
 	public static void main(String args[]) throws Exception {
 		Email email = new Email();
 		email.setFrom(new EmailAddress("test@mangstadt.dyndns.org", "Bob"));
-		//email.addTo(new EmailAddress("mike.angstadt@gmail.com"));
-		email.addTo(new EmailAddress("foo@mangstadt.dyndns.org"));
-		email.addTo(new EmailAddress("postmaster@mangstadt.dyndns.org"));
-		//email.to.add(new EmailAddress("test@mangstadt.dyndns.org"));
+		email.addTo(new EmailAddress("mike.angstadt@gmail.com"));
+		//email.addTo(new EmailAddress("foo@mangstadt.dyndns.org"));
+		//email.addTo(new EmailAddress("postmaster@mangstadt.dyndns.org"));
 		//email.to.add(new EmailAddress("test@mangstadt.dyndns.org"));
 		email.setSubject("Important!");
 		email.setBody(".My first\n.email message!\r..woo!");
@@ -177,167 +183,28 @@ public class MailSender {
 			for (Map.Entry<String, List<OutboundEmailGroup>> groupByHost : groupsByHost.entrySet()) {
 				String host = groupByHost.getKey();
 				List<OutboundEmailGroup> groups = groupByHost.getValue();
-				SMTPOutboundConnection smtpClient = null;
-				try {
+
+				//check to see if any of the emails returned from the database query are already in the process of being sent
+				List<OutboundEmailGroup> toSend = new LinkedList<OutboundEmailGroup>();
+				synchronized (beingSentGroups) {
 					for (OutboundEmailGroup group : groups) {
-						//true if this will be the last attempt to send the email
-						boolean lastAttempt = false;
-
-						if (group.attempts == 0) {
-							group.firstAttempt = new Date();
-						} else {
-							//how long ago the first attempt was
-							long diffFirstAttempt = System.currentTimeMillis() - group.firstAttempt.getTime();
-							if (diffFirstAttempt > giveUpInterval) {
-								lastAttempt = true;
+						boolean found = false;
+						for (OutboundEmailGroup beingSentGroup : beingSentGroups) {
+							if (group.id == beingSentGroup.id) {
+								found = true;
+								break;
 							}
 						}
 
-						group.attempts++;
-						group.prevAttempt = new Date();
-
-						boolean error = false;
-
-						try {
-							//create the SMTP connection
-							if (smtpClient == null) {
-								//get SMTP server addresses
-								List<String> smtpHosts = MxRecordResolver.resolveSmtpServers(host);
-
-								for (String smtpHost : smtpHosts) {
-									try {
-										smtpClient = new SMTPOutboundConnection(hostName, smtpHost, 25);
-										break;
-									} catch (Exception e) {
-										//this SMTP address didn't work, try the next one
-										logger.log(Level.INFO, "Problem connecting to SMTP server \"" + smtpHost + "\".", e);
-									}
-								}
-
-								if (smtpClient == null) {
-									//if none of the SMTP addresses worked, then we can't send the email
-									throw new AllServersDownException(smtpHosts);
-								}
-							}
-
-							//send the email
-							SendResult sendResult = smtpClient.sendEmail(group.recipients, group.email);
-
-							if (!sendResult.failedAddresses.isEmpty()) {
-								//the server rejected one or more recipient addresses, so send an error email to the original sender
-								//this is still considered a successfully sent email though, in that it will be removed from the outbound emails list
-
-								Email errorEmail = new Email();
-								errorEmail.setFrom(errorSender);
-								errorEmail.addTo(group.email.sender);
-								errorEmail.setSubject("Sleet Postmaster Notification: Email could not be delivered");
-
-								StringBuilder body = new StringBuilder();
-								body.append("Delivery failed for the following recipient(s): ");
-								for (int i = 0; i < sendResult.failedAddresses.size(); i++) {
-									EmailAddress recipient = sendResult.failedAddresses.get(i);
-									String msg = sendResult.failedAddressesMessages.get(i);
-									body.append(recipient.getAddress() + " - " + msg);
-									body.append("\n");
-								}
-								body.append("\nOriginal message is as follows ===============\n\n");
-								body.append(group.email.data.toData());
-								errorEmail.setBody(body.toString());
-
-								sendEmail(errorEmail);
-							}
-						} catch (AllServersDownException e) {
-							group.failures.add("Could not connect to any SMTP servers: " + e.getSmtpHosts());
-							logger.info("All SMTP servers down for \"" + host + "\".");
-							error = true;
-						} catch (Exception e) {
-							group.failures.add("Problem sending email.\n" + ExceptionUtils.getStackTrace(e));
-							logger.log(Level.INFO, "Cannot send email (attempt # " + group.attempts + ").", e);
-							error = true;
-						}
-
-						if (error) {
-							//email couldn't be sent
-
-							if (lastAttempt) {
-								//send error email
-								Email errorEmail = new Email();
-								errorEmail.setFrom(errorSender);
-								errorEmail.addTo(group.email.sender);
-								errorEmail.setSubject("Sleet Postmaster Notification: Email could not be delivered");
-
-								StringBuilder body = new StringBuilder();
-								body.append("Delivery failed for the following recipient(s): ");
-								for (int i = 0; i < group.recipients.size(); i++) {
-									EmailAddress recipient = group.recipients.get(i);
-									body.append(recipient.getAddress());
-									body.append("\n");
-								}
-								body.append("\nOriginal message is as follows ===============\n\n");
-								body.append(group.email.data);
-								errorEmail.setBody(body.toString());
-
-								sendEmail(errorEmail);
-
-								synchronized (dao) {
-									try {
-										dao.deleteEmail(group.email);
-										dao.commit();
-									} catch (SQLException e) {
-										dao.rollback();
-										throw e;
-									}
-								}
-							} else {
-								//update the outbound email group in the database
-								synchronized (dao) {
-									try {
-										dao.updateOutboundEmailGroup(group);
-										dao.commit();
-									} catch (SQLException e) {
-										dao.rollback();
-										throw e;
-									}
-								}
-							}
-						} else {
-							synchronized (dao) {
-								try {
-									//mark the email as having been successfully sent
-									dao.insertOutboxEmail(group.email);
-
-									//delete it from the outbound queue
-									dao.deleteOutboundEmailGroup(group);
-
-									dao.commit();
-								} catch (SQLException e) {
-									dao.rollback();
-									throw e;
-								}
-							}
-						}
-					} //end foreach OutboundEmailGroup
-				} finally {
-					if (smtpClient != null) {
-						//close connection to SMTP server
-						try {
-							smtpClient.close();
-						} catch (Exception e) {
-							logger.log(Level.WARNING, "Problem closing SMTP connection.", e);
-						}
-
-						//log the SMTP communication
-						if (transactionLogFile != null) {
-							synchronized (transactionLogFile) {
-								try {
-									smtpClient.getTransactionLog().writeToFile(transactionLogFile);
-								} catch (IOException e) {
-									logger.log(Level.WARNING, "Problem writing to transaction log.", e);
-								}
-							}
+						if (!found) {
+							toSend.add(group);
+							beingSentGroups.add(group);
 						}
 					}
 				}
+
+				SenderThread t = new SenderThread(host, toSend);
+				t.start();
 			}
 
 			try {
@@ -406,137 +273,236 @@ public class MailSender {
 	}
 
 	/**
-	 * Thrown if all of a host's SMTP servers are down.
+	 * Sends an email and then updates the database according to whether it was
+	 * successfully sent or not.
 	 * @author Mike Angstadt [mike.angstadt@gmail.com]
 	 */
-	@SuppressWarnings("serial")
-	private static class AllServersDownException extends Exception {
-		/**
-		 * The SMTP server addresses.
-		 */
-		private final List<String> smtpHosts;
+	private class SenderThread extends Thread {
+		private final String host;
+		private final List<OutboundEmailGroup> groups;
 
 		/**
-		 * @param smtpHosts the SMTP server addresses
+		 * @param host the email host (e.g. "gmail.com")
+		 * @param groups the emails that are destined for this host
 		 */
-		public AllServersDownException(List<String> smtpHosts) {
-			this.smtpHosts = smtpHosts;
+		public SenderThread(String host, List<OutboundEmailGroup> groups) {
+			this.host = host;
+			this.groups = groups;
 		}
 
-		/**
-		 * Gets the SMTP server addresses.
-		 * @return the SMTP server addresses
-		 */
-		public List<String> getSmtpHosts() {
-			return smtpHosts;
+		@Override
+		public void run() {
+			//get SMTP server addresses
+			List<String> smtpHosts = MxRecordResolver.resolveSmtpServers(host);
+
+			//open SMTP connection
+			SMTPOutboundConnection smtpClient = null;
+			for (String smtpHost : smtpHosts) {
+				try {
+					smtpClient = new SMTPOutboundConnection(hostName, smtpHost, 25);
+					break;
+				} catch (Exception e) {
+					//this SMTP address didn't work, try the next one
+					logger.log(Level.INFO, "Problem connecting to SMTP server \"" + smtpHost + "\".", e);
+				}
+			}
+
+			//if none of the SMTP addresses worked, then we can't send the email
+			if (smtpClient == null) {
+				logger.info("All SMTP servers down for \"" + host + "\".");
+
+				//update each group
+				for (OutboundEmailGroup group : groups) {
+					if (group.attempts == 0) {
+						group.firstAttempt = new Date();
+					}
+					group.attempts++;
+					group.prevAttempt = new Date();
+					group.failures.add("Could not connect to any SMTP servers: " + smtpHosts);
+				}
+
+				//persist groups to database
+				synchronized (dao) {
+					try {
+						for (OutboundEmailGroup group : groups) {
+							//update the outbound email group in the database
+							dao.updateOutboundEmailGroup(group);
+						}
+						dao.commit();
+					} catch (SQLException e) {
+						logger.log(Level.SEVERE, "Problem updating OutboundEmailGroups in database.", e);
+						dao.rollback();
+					}
+				}
+
+				synchronized (beingSentGroups) {
+					beingSentGroups.removeAll(groups);
+				}
+
+				//terminate the thread
+				return;
+			}
+
+			//SMTP connection successfully established
+			//so send the email(s)
+			try {
+				for (OutboundEmailGroup group : groups) {
+					boolean lastAttempt = false;
+					if (group.attempts == 0) {
+						group.firstAttempt = new Date();
+					} else {
+						//how long ago the first attempt was
+						long diffFirstAttempt = System.currentTimeMillis() - group.firstAttempt.getTime();
+
+						//is this the last attempt for this email?
+						if (diffFirstAttempt > giveUpInterval) {
+							lastAttempt = true;
+						}
+					}
+					group.attempts++;
+					group.prevAttempt = new Date();
+
+					boolean error = false;
+					try {
+						//send the email
+						SendResult sendResult = smtpClient.sendEmail(group.recipients, group.email);
+
+						if (sendResult.failedAddresses.isEmpty()) {
+							logger.info("Email successfully sent to " + group.recipients);
+						} else {
+							//the server rejected one or more recipient addresses, so send an error email to the original sender
+							//this is still considered a successfully sent email though, in that it will be removed from the outbound emails list
+
+							logger.info("Server rejected these email addresses: " + sendResult.failedAddresses + "\nbut the email was successfully delivered to: " + sendResult.successfulAddresses);
+
+							Email errorEmail = new Email();
+							errorEmail.setFrom(errorSender);
+							errorEmail.addTo(group.email.sender);
+							errorEmail.setSubject("Postmaster Notification: Email could not be delivered");
+
+							StringBuilder body = new StringBuilder();
+							body.append("Delivery failed for the following recipient(s): ");
+							for (int i = 0; i < sendResult.failedAddresses.size(); i++) {
+								EmailAddress recipient = sendResult.failedAddresses.get(i);
+								String msg = sendResult.failedAddressesMessages.get(i);
+								body.append(recipient.getAddress() + " - " + msg);
+								body.append("\n");
+							}
+
+							if (!sendResult.successfulAddresses.isEmpty()) {
+								body.append("\nHowever, delivery SUCCEEDED for these recipient(s): ");
+								for (EmailAddress recipient : sendResult.successfulAddresses) {
+									body.append(recipient.getAddress());
+									body.append("\n");
+								}
+							}
+
+							body.append("\nOriginal message is as follows ===============\n\n");
+							body.append(group.email.data.toData()); //TODO should use raw data, not over-the-wire data
+							errorEmail.setBody(body.toString());
+
+							sendEmail(errorEmail);
+						}
+					} catch (Exception e) {
+						group.failures.add("Problem sending email.\n" + ExceptionUtils.getStackTrace(e));
+						logger.log(Level.INFO, "Cannot send email (attempt # " + group.attempts + ").", e);
+						error = true;
+					}
+
+					if (error) {
+						//email couldn't be sent
+
+						if (lastAttempt) {
+							//give up trying to send the mail
+							//send an error email to the original sender
+
+							Email errorEmail = new Email();
+							errorEmail.setFrom(errorSender);
+							errorEmail.addTo(group.email.sender);
+							errorEmail.setSubject("Postmaster Notification: Email could not be delivered");
+
+							StringBuilder body = new StringBuilder();
+							body.append("Delivery failed for the following recipient(s): ");
+							for (int i = 0; i < group.recipients.size(); i++) {
+								EmailAddress recipient = group.recipients.get(i);
+								body.append(recipient.getAddress());
+								body.append("\n");
+							}
+							body.append("\nOriginal message is as follows ===============\n\n");
+							body.append(group.email.data.toData()); //TODO should use raw data, not over-the-wire data
+							errorEmail.setBody(body.toString());
+
+							sendEmail(errorEmail);
+
+							synchronized (dao) {
+								try {
+									dao.deleteEmail(group.email);
+									dao.commit();
+								} catch (SQLException e) {
+									dao.rollback();
+									throw e;
+								}
+							}
+						} else {
+							//update the outbound email group in the database
+							synchronized (dao) {
+								try {
+									dao.updateOutboundEmailGroup(group);
+									dao.commit();
+								} catch (SQLException e) {
+									dao.rollback();
+									throw e;
+								}
+							}
+						}
+					} else {
+						//there were no errors sending the email
+
+						synchronized (dao) {
+							try {
+								//mark the email as having been successfully sent
+								dao.insertOutboxEmail(group.email);
+
+								//delete it from the outbound queue
+								dao.deleteOutboundEmailGroup(group);
+
+								dao.commit();
+							} catch (SQLException e) {
+								dao.rollback();
+								throw e;
+							}
+						}
+					}
+
+					synchronized (beingSentGroups) {
+						beingSentGroups.remove(group);
+					}
+				}
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "Error in SenderThread.", e);
+			} finally {
+				//close connection to SMTP server
+				try {
+					smtpClient.close();
+				} catch (Exception e) {
+					logger.log(Level.WARNING, "Problem closing SMTP connection.", e);
+				}
+
+				//log the SMTP communication
+				if (transactionLogFile != null) {
+					synchronized (transactionLogFile) {
+						try {
+							smtpClient.getTransactionLog().writeToFile(transactionLogFile);
+						} catch (IOException e) {
+							logger.log(Level.WARNING, "Problem writing to transaction log.", e);
+						}
+					}
+				}
+
+				synchronized (beingSentGroups) {
+					beingSentGroups.removeAll(groups);
+				}
+			}
 		}
 	}
-
-	//	/**
-	//	 * Thread for connecting to an SMTP server and sending an email to one or
-	//	 * more recipients of that server.
-	//	 * @author Mike Angstadt [mike.angstadt@gmail.com]
-	//	 */
-	//	private class SenderThread extends Thread {
-	//		/**
-	//		 * The email was successfully sent, but there was a problem with the
-	//		 * email itself, so send an email to the original sender describing the
-	//		 * problem.
-	//		 */
-	//		private Email errorEmail;
-	//
-	//		private final SMTPOutboundConnection client;
-	//
-	//		private final OutboundEmailGroup group;
-	//
-	//		public SenderThread(OutboundEmailGroup group) {
-	//			try {
-	//				client = createConnection(group.host);
-	//			} catch (NamingException e) {
-	//				group.failures.add("Could not get MX records for " + group.host);
-	//				logger.log(Level.SEVERE, "Problem getting MX record for host " + group.host, e);
-	//				error = true;
-	//			} catch (AllServersDownException e) {
-	//				group.failures.add("Could not connect to any SMTP servers: " + e.getSmtpHosts());
-	//				error = true;
-	//			} catch (Exception e) {
-	//				group.failures.add("Problem sending email.\n" + ExceptionUtils.getStackTrace(e));
-	//				logger.log(Level.INFO, "Cannot send email (attempt # " + group.attempts + ").", e);
-	//				error = true;
-	//			}
-	//			this.group = group;
-	//		}
-	//
-	//		public SenderThread(SMTPOutboundConnection client, OutboundEmailGroup group) {
-	//			this.client = client;
-	//			this.group = group;
-	//		}
-	//
-	//		public SenderThread(String host, List<EmailAddress> recipients, sleet.db.Email email) throws NamingException, AllServersDownException {
-	//			group = new OutboundEmailGroup();
-	//			group.host = host;
-	//			group.recipients = recipients;
-	//			group.email = email;
-	//
-	//			client = createConnection(host);
-	//		}
-	//
-	//		private void send() throws IOException, SQLException {
-	//			group.attempts++;
-	//			SendResult sendResult = client.sendEmail(group.recipients, group.email);
-	//
-	//			if (!sendResult.failedAddresses.isEmpty()) {
-	//				//one or more recipient addresses were invalid, so send an error email to the original sender
-	//
-	//				errorEmail = new Email();
-	//				errorEmail.setFrom(errorSender);
-	//				errorEmail.addTo(group.email.sender);
-	//				errorEmail.setSubject("Sleet Postmaster Notification: Email could not be delivered");
-	//
-	//				StringBuilder body = new StringBuilder();
-	//				body.append("Delivery failed for the following recipient(s): ");
-	//				for (int i = 0; i < sendResult.failedAddresses.size(); i++) {
-	//					EmailAddress recipient = sendResult.failedAddresses.get(i);
-	//					String msg = sendResult.failedAddressesMessages.get(i);
-	//					body.append(recipient.getAddress() + " - " + msg);
-	//					body.append("\n");
-	//				}
-	//				body.append("\nOriginal message is as follows ===============\n\n");
-	//				body.append(group.email.data);
-	//				errorEmail.setBody(body.toString());
-	//
-	//				sendEmail(errorEmail);
-	//			}
-	//		}
-	//
-	//		@Override
-	//		public void run() {
-	//			Exception error = null;
-	//			try {
-	//				send();
-	//			} catch (Exception e) {
-	//				error = e;
-	//			}
-	//
-	//			//email was sent successfully, so mark it as an "outbox email" and remove it from the outbound emails list
-	//			synchronized (dao) {
-	//				try {
-	//					if (error == null) {
-	//						dao.insertOutboxEmail(group.email);
-	//						if (group.id != null) {
-	//							dao.deleteOutboundEmailGroup(group);
-	//						}
-	//					} else {
-	//						group.attempts++;
-	//						group.failures.add(ExceptionUtils.getStackTrace(error));
-	//						dao.upsertOutboundEmailGroup(group);
-	//					}
-	//
-	//					dao.commit();
-	//				} catch (Exception e) {
-	//					dao.rollback();
-	//				}
-	//			}
-	//		}
-	//	}
 }

@@ -16,6 +16,11 @@ public class SendResult {
 	public final List<EmailAddress> failedAddresses = new ArrayList<EmailAddress>();
 
 	/**
+	 * The addresses that successfully received the email.
+	 */
+	public final List<EmailAddress> successfulAddresses = new ArrayList<EmailAddress>();
+
+	/**
 	 * The specific error messages that the server returned for the failed
 	 * addresses.
 	 */
