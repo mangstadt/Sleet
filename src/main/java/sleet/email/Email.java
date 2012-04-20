@@ -10,7 +10,7 @@ import java.util.List;
  * @author Mike Angstadt [mike.angstadt@gmail.com]
  */
 public class Email {
-	private EmailRaw email;
+	private EmailRaw email = new EmailRaw();
 
 	/**
 	 * Gets the "from" address.
