@@ -241,6 +241,9 @@ public class EmailHeaders extends EmailHeadersRaw {
 	 */
 	public AddressHeader getAddressHeader(String name) {
 		String value = getHeader(name);
+		if (value == null){
+			return null;
+		}
 		value = removeComments(value);
 		value = value.trim();
 

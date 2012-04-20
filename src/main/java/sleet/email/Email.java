@@ -36,6 +36,9 @@ public class Email {
 	public void addTo(EmailAddress to) {
 		email.getRecipients().add(to);
 		AddressHeader addresses = email.getData().getHeaders().getAddressHeader("To");
+		if (addresses == null){
+			addresses = new AddressHeader();
+		}
 		addresses.getAddresses().add(to);
 		email.getData().getHeaders().setEmailHeader("To", addresses.getAddresses());
 	}
