@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.codec.binary.Base64;
 
 import sleet.Sleet;
 import sleet.db.DbDao;
@@ -39,6 +42,14 @@ public class SMTPConnectionListener {
 	private final DbDao dao;
 
 	/**
+	 * True if this is a Mail Transfer Agent (MTA, an SMTP server that accepts
+	 * incoming mail from the Internet), false if this listener is a Mail
+	 * Submission Agent (MSA, an SMTP server that accepts outbound mail to send
+	 * to the Internet).
+	 */
+	private final boolean mta;
+
+	/**
 	 * The host name of this server.
 	 */
 	private String hostName;
@@ -46,7 +57,7 @@ public class SMTPConnectionListener {
 	/**
 	 * The port to listen for SMTP connections.
 	 */
-	private int port = 25;
+	private int port;
 
 	/**
 	 * True if the listener has started, false if not.
@@ -60,10 +71,32 @@ public class SMTPConnectionListener {
 	private File transactionLogFile;
 
 	/**
+	 * Sends outbound emails. Should only be set if this object is a MSA.
+	 */
+	private MailSender mailSender;
+
+	/**
+	 * Constructor for creating an MTA (mail transfer agent) server that accepts
+	 * incoming emails from the Internet.
 	 * @param dao the database DAO
 	 */
 	public SMTPConnectionListener(DbDao dao) {
 		this.dao = dao;
+		mta = true;
+		port = 25;
+	}
+
+	/**
+	 * Constructor for creating an MSA (mail submission agent) server that
+	 * accepts outbound emails to send out to the Internet.
+	 * @param dao the database DAO
+	 * @param mailSender sends the emails
+	 */
+	public SMTPConnectionListener(DbDao dao, MailSender mailSender) {
+		this.dao = dao;
+		this.mailSender = mailSender;
+		mta = false;
+		port = 587;
 	}
 
 	/**
@@ -124,11 +157,12 @@ public class SMTPConnectionListener {
 		started = true;
 
 		ServerSocket serverSocket = new ServerSocket(port);
-		logger.info("Ready to receive SMTP requests on port " + port + "...");
+
+		logger.info("Ready to receive SMTP " + (mta ? "MTA" : "MSA") + " requests on port " + port + "...");
 
 		while (true) {
 			Socket socket = serverSocket.accept();
-			logger.info("SMTP connection established with " + socket.getInetAddress().getHostAddress());
+			logger.info("SMTP " + (mta ? "MTA" : "MSA") + " connection established with " + socket.getInetAddress().getHostAddress());
 			SMTPClientThread thread = new SMTPClientThread(socket);
 			thread.start();
 		}
@@ -140,7 +174,7 @@ public class SMTPConnectionListener {
 	 */
 	private class SMTPClientThread extends Thread {
 		private final Socket socket;
-		private final SMTPServerSocket serverSocket; 
+		private final SMTPServerSocket serverSocket;
 
 		public SMTPClientThread(Socket socket) throws IOException {
 			this.socket = socket;
@@ -158,6 +192,7 @@ public class SMTPConnectionListener {
 				EmailRaw email = null;
 				serverSocket.sendResponse(220, hostName + " " + Sleet.appName + " v" + Sleet.version + " Ready to receive mail.");
 				SMTPRequest clientMsg;
+				User authenticatedUser = null;
 				while ((clientMsg = serverSocket.nextRequest()) != null) {
 					ClientCommand cmd;
 					try {
@@ -172,7 +207,11 @@ public class SMTPConnectionListener {
 						msgs.add("List of available commands:");
 						if (email == null) {
 							if (ehloSent) {
-								msgs.add("MAIL FROM:<sender address> - The sender of the email.");
+								if (!mta && authenticatedUser == null) {
+									msgs.add("AUTH PLAIN base64(username/password) - Call this to authenticate with the server.");
+								} else {
+									msgs.add("MAIL FROM:<sender address> - The sender of the email.");
+								}
 							} else {
 								msgs.add("EHLO <client host name> - Call this to start sending emails.");
 							}
@@ -200,11 +239,69 @@ public class SMTPConnectionListener {
 						List<String> messages = new ArrayList<String>();
 						messages.add(hostName + " Hello" + (params == null ? "" : " " + params));
 						messages.add("SIZE 1000000");
+						messages.add("AUTH PLAIN");
 						messages.add("HELP");
+						//TODO extended status codes should be supported by MSAs (RFC-6409, p.12)
+						//TODO piplining should be supported by MSAs (RFC-6409, p.13)
 						//messages.add("EXPN");
 						//TODO RFC-5321 p.25 - say that EXPN is supported
 						serverSocket.sendResponse(250, messages);
 						email = null;
+					} else if (cmd == ClientCommand.AUTH && !mta) {
+						if (!ehloSent) {
+							serverSocket.sendResponse(503, "EHLO required before authentication.");
+							continue;
+						}
+
+						if (authenticatedUser != null) {
+							//see RFC-4954, p.3
+							serverSocket.sendResponse(503, "Already authenticated.");
+							continue;
+						}
+
+						if (params == null || params.isEmpty()) {
+							serverSocket.sendResponse(501, "Invalid syntax for AUTH command.");
+							continue;
+						}
+
+						String split[] = params.split(" ");
+						String authMech = split[0];
+						if ("PLAIN".equalsIgnoreCase(authMech)) {
+							//see RFC-4954, p.7-8
+
+							//the auth string that the client sends is a base64-encoded string "username@password"
+							//TODO this probably isn't correct, wanted to get something working
+							String authStr;
+							if (split.length > 1) {
+								//the auth string is on the same line as the AUTH command
+								//see RFC-4964, p.7
+								authStr = split[1];
+							} else {
+								//the auth string is on the next line, after the AUTH command
+								//see RFC-4964, p.8
+								serverSocket.sendResponse(334, " ");
+								authStr = serverSocket.nextLine();
+							}
+							authStr = new String(Base64.decodeBase64(authStr));
+
+							int slash = authStr.indexOf('/');
+							if (slash == -1 || slash == authStr.length() - 1) {
+								serverSocket.sendResponse(535, "Authentication credentials invalid.");
+							} else {
+								String username = authStr.substring(0, slash);
+								String password = authStr.substring(slash + 1);
+
+								User user = dao.selectUser(username, password);
+								if (user == null) {
+									serverSocket.sendResponse(535, "Authentication credentials invalid.");
+								} else {
+									authenticatedUser = user;
+									serverSocket.sendResponse(235, "Authentication successful.");
+								}
+							}
+						} else {
+							serverSocket.sendResponse(501, "The " + authMech + " authentication mechanism is not supported.");
+						}
 					} else if (cmd == ClientCommand.RSET) {
 						if (params != null) {
 							//this command does not have parameters (see RFC 5321 p.55)
@@ -300,8 +397,16 @@ public class SMTPConnectionListener {
 							serverSocket.sendResponse(250, lines);
 						}
 					} else if (cmd == ClientCommand.MAIL) {
+						//TODO "from" address can be empty, RFC-6409 p.7
 						if (!ehloSent) {
 							serverSocket.sendResponse(503, "EHLO required before emails can be received.");
+							continue;
+						}
+
+						if (!mta && authenticatedUser == null) {
+							//user must authenticate first
+							//see RFC-6409, p.10,12
+							serverSocket.sendResponse(530, "You must authenticate first.");
 							continue;
 						}
 
@@ -320,8 +425,18 @@ public class SMTPConnectionListener {
 								continue;
 							}
 
+							if (!mta) {
+								if (!hostName.equals(addr.getHost()) || !authenticatedUser.username.equals(addr.getMailbox())){
+									//user can only send emails that are from herself
+									//see RFC-6409, p.10
+									serverSocket.sendResponse(550, "The \"from\" address must be from *your* email account.");
+									continue;
+								}
+							}
+
 							email = new EmailRaw();
 							email.setMailFrom(addr);
+
 							serverSocket.sendResponse(250, "Ok");
 						} else {
 							serverSocket.sendResponse(501, "MAIL command must look like: \"MAIL FROM:<mailbox@host>\"");
@@ -329,6 +444,13 @@ public class SMTPConnectionListener {
 					} else if (cmd == ClientCommand.RCPT) {
 						if (email == null) {
 							serverSocket.sendResponse(503, "MAIL command must be used before RCPT can be used");
+							continue;
+						}
+
+						if (!mta && authenticatedUser == null) {
+							//user mus	t authenticate first
+							//see RFC-6409, p.10,12
+							serverSocket.sendResponse(530, "You must authenticate first.");
 							continue;
 						}
 
@@ -350,18 +472,20 @@ public class SMTPConnectionListener {
 								continue;
 							}
 
-							//check host name
-							String host = addr.getHost();
-							if (!hostName.equalsIgnoreCase(host)) {
-								serverSocket.sendResponse(551, "Invalid host name: " + host);
-								continue;
-							}
+							if (mta) {
+								//check host name
+								String host = addr.getHost();
+								if (!hostName.equalsIgnoreCase(host)) {
+									serverSocket.sendResponse(551, "Invalid host name: " + host);
+									continue;
+								}
 
-							//check mailbox
-							String mailbox = addr.getMailbox();
-							if (!dao.doesMailboxExist(mailbox)) {
-								serverSocket.sendResponse(550, "Mailbox not found: " + mailbox);
-								continue;
+								//check mailbox
+								String mailbox = addr.getMailbox();
+								if (!dao.doesMailboxExist(mailbox)) {
+									serverSocket.sendResponse(550, "Mailbox not found: " + mailbox);
+									continue;
+								}
 							}
 
 							email.addRecipient(addr);
@@ -398,48 +522,58 @@ public class SMTPConnectionListener {
 						}
 						email.setData(new EmailData(data.toString()));
 
-						DateFormat df = new EmailDateFormat();
+						if (mta) {
+							//receiving email from the Internet
 
-						//trace info--from clause
-						//existing "Received" headers in the email must not be modified or removed
-						// see RFC 5321 p.57
-						String remoteIp = socket.getInetAddress().getHostAddress();
-						StringBuilder sb = new StringBuilder();
-						sb.append("from ");
-						if (remoteHostName == null) {
-							sb.append(remoteIp);
-						} else {
-							sb.append(remoteHostName + " ([" + remoteIp + "])");
-						}
-						sb.append(" by " + hostName + "; " + df.format(new Date()));
-						email.getData().getHeaders().addHeader("Received", sb.toString());
-						email.getData().getHeaders().addHeader("Return-Path", "<" + email.getMailFrom().getAddress() + ">");
+							DateFormat df = new EmailDateFormat();
 
-						//add mail message to database
-						Exception error = null;
-						sleet.db.Email dbEmail = null;
-						synchronized (dao) {
-							try {
-								dbEmail = new sleet.db.Email();
-								dbEmail.sender = email.getMailFrom();
-								dbEmail.recipients = email.getRecipients();
-								dbEmail.data = email.getData();
-								dao.insertInboxEmail(dbEmail);
-								dao.commit();
-							} catch (Exception e) {
-								dao.rollback();
-
-								error = e;
-								logger.log(Level.SEVERE, "Error saving email to database.", e);
+							//trace info--from clause
+							//existing "Received" headers in the email must not be modified or removed
+							// see RFC 5321 p.57
+							String remoteIp = socket.getInetAddress().getHostAddress();
+							StringBuilder sb = new StringBuilder();
+							sb.append("from ");
+							if (remoteHostName == null) {
+								sb.append(remoteIp);
+							} else {
+								sb.append(remoteHostName + " ([" + remoteIp + "])");
 							}
-						}
+							sb.append(" by " + hostName + "; " + df.format(new Date()));
+							email.getData().getHeaders().addHeader("Received", sb.toString());
+							email.getData().getHeaders().addHeader("Return-Path", "<" + email.getMailFrom().getAddress() + ">");
 
-						//TODO send emails to any mailing lists
+							//add mail message to database
+							Exception error = null;
+							sleet.db.Email dbEmail = null;
+							synchronized (dao) {
+								try {
+									dbEmail = new sleet.db.Email();
+									dbEmail.sender = email.getMailFrom();
+									dbEmail.recipients = email.getRecipients();
+									dbEmail.data = email.getData();
+									dao.insertInboxEmail(dbEmail);
+									dao.commit();
+								} catch (Exception e) {
+									dao.rollback();
 
-						if (error == null) {
-							serverSocket.sendResponse(250, "Ok: queued as " + dbEmail.id);
-						} else {
-							serverSocket.sendResponse(451, "An unexpected server error occurred while saving the email, sorry: " + error.getMessage());
+									error = e;
+									logger.log(Level.SEVERE, "Error saving email to database.", e);
+								}
+							}
+
+							if (error == null) {
+								serverSocket.sendResponse(250, "Ok: queued as " + dbEmail.id);
+							} else {
+								serverSocket.sendResponse(451, "An unexpected server error occurred while saving the email, sorry: " + error.getMessage());
+							}
+						} else { //if (!mta)
+							//sending email to the Internet
+							try {
+								mailSender.sendEmail(email);
+								serverSocket.sendResponse(250, "Ok: queued for sending.");
+							} catch (SQLException e) {
+								serverSocket.sendResponse(451, "An unexpected server error occurred while sending the email, sorry: " + e.getMessage());
+							}
 						}
 						email = null;
 					} else if (cmd == ClientCommand.QUIT) {

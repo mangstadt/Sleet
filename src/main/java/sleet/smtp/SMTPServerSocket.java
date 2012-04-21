@@ -151,7 +151,7 @@ public class SMTPServerSocket {
 	 * @return the next line of data
 	 * @throws IOException
 	 */
-	private String nextLine() throws IOException {
+	public String nextLine() throws IOException {
 		String line = fromClient.readLine();
 
 		String msg;

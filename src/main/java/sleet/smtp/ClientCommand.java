@@ -5,5 +5,5 @@ package sleet.smtp;
  * @author Mike Angstadt [mike.angstadt@gmail.com]
  */
 public enum ClientCommand {
-	HELO, EHLO, MAIL, RCPT, QUIT, DATA, VRFY, EXPN, RSET, HELP, NOOP
+	HELO, EHLO, AUTH, MAIL, RCPT, QUIT, DATA, VRFY, EXPN, RSET, HELP, NOOP
 }

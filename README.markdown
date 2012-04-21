@@ -18,7 +18,7 @@ Do a Maven package:
 1. `chmod 744 start.sh`
 1. `./start.sh`
 
-The `start.sh` script will start the Sleet SMTP server on port 2550.  POP3 will run on port 2551.  The reason why these non-standard ports are used is that, for some reason, I had trouble opening server sockets to the standard ports on my computer (ports 25 and 110 respectively).  To test it out, you can connect to it via telnet:
+The `start.sh` script will start the Sleet SMTP server on port 2550.  Mail submission will run on port 2551 and POP3 will run on port 2552.  The reason why these non-standard ports are used is that I couldn't open connections to the standard ports on my computer (ports 25, 587, and 110 respectively).  To test it out, you can connect to it via telnet:
 
     telnet localhost <port>
 
@@ -28,6 +28,9 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
 
     --smtpPort=PORT
     The SMTP server port (defaults to 25).
+    
+    --smtpMsaPort=PORT
+    The SMTP Mail Submission port (defaults to 587).
     
     --pop3Port=PORT
     The POP3 server port (defaults to 110).
@@ -44,6 +47,9 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
     
     --smtp-client-log=PATH
     The path to where SMTP transactions that the server sends are logged.
+    
+    --smtp-msa-log=PATH
+    The path to where SMTP MSA transactions are logged.
     
     --pop3-log=PATH
     The path to where POP3 transactions that the server receives are logged.

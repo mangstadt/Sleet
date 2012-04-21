@@ -20,6 +20,7 @@ import sleet.db.DirbyMemoryDbDao;
 import sleet.db.OutboundEmailGroup;
 import sleet.email.Email;
 import sleet.email.EmailAddress;
+import sleet.email.EmailHeaders;
 import sleet.email.EmailRaw;
 
 /**
@@ -203,8 +204,10 @@ public class MailSender {
 					}
 				}
 
-				SenderThread t = new SenderThread(host, toSend);
-				t.start();
+				if (!toSend.isEmpty()){
+					SenderThread t = new SenderThread(host, toSend);
+					t.start();
+				}
 			}
 
 			try {
@@ -214,38 +217,48 @@ public class MailSender {
 			}
 		}
 	}
-
+	
 	/**
 	 * Queues an email for sending.
 	 * @param email the email to send
 	 */
 	public void sendEmail(Email email) throws SQLException {
+		sendEmail(email.getEmailRaw());
+	}
+
+	/**
+	 * Queues an email for sending.
+	 * @param email the email to send
+	 */
+	public void sendEmail(EmailRaw email) throws SQLException {
+		EmailHeaders headers = email.getData().getHeaders();
+		
 		//set the "Date" header if it's not already set
-		Date date = email.getHeaders().getDate();
+		//see RFC-6409, p.14
+		Date date = headers.getDate();
 		if (date == null) {
 			date = new Date();
-			email.getHeaders().setDate(date);
+			headers.setDate(date);
 		}
 
 		//"Message-ID" header must be set on all emails
 		//give the email an ID if it doesn't have one already
-		String id = email.getHeaders().getMessageId();
+		//see RFC-6409, p.14
+		String id = headers.getMessageId();
 		if (id == null) {
 			id = UUID.randomUUID().toString();
-			email.getHeaders().setMessageId(id);
+			headers.setMessageId(id + "@" + hostName);
 		}
-
-		EmailRaw emailRaw = email.getEmailRaw();
 
 		//create database email object
 		sleet.db.Email dbEmail = new sleet.db.Email();
-		dbEmail.sender = emailRaw.getMailFrom();
-		dbEmail.recipients = emailRaw.getRecipients();
-		dbEmail.data = emailRaw.getData();
+		dbEmail.sender = email.getMailFrom();
+		dbEmail.recipients = email.getRecipients();
+		dbEmail.data = email.getData();
 
 		//group recipients by host
 		Map<String, OutboundEmailGroup> groups = new HashMap<String, OutboundEmailGroup>();
-		for (EmailAddress recipient : emailRaw.getRecipients()) {
+		for (EmailAddress recipient : email.getRecipients()) {
 			String host = recipient.getHost();
 			OutboundEmailGroup group = groups.get(host);
 			if (group == null) {

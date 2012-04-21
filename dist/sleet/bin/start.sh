@@ -3,8 +3,10 @@ java -classpath ../lib/sleet.jar:../lib/commons-codec-1.6.jar:../lib/commons-io-
 sleet.Sleet \
 --hostName=mangstadt.dyndns.org \
 --smtpPort=2550 \
---pop3Port=2551 \
+--smtpMsaPort=2551 \
+--pop3Port=2552 \
 --database=../db/dirby \
 --smtp-server-log=../logs/smtp-transactions.log \
+--smtp-msa-log=../logs/smtp-msa-transactions.log \
 --smtp-client-log=../logs/smtp-client-transactions.log \
 --pop3-log=../logs/pop3-transactions.log
