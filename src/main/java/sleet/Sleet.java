@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import sleet.admin.AdminConnectionListener;
 import sleet.db.DbDao;
 import sleet.db.DirbyEmbeddedDbDao;
 import sleet.db.DirbyMemoryDbDao;
@@ -46,6 +47,10 @@ public class Sleet {
 			System.out.println("--pop3-port=PORT");
 			System.out.println("The POP3 server port (defaults to 110).");
 			System.out.println();
+			
+			System.out.println("--admin-port=PORT");
+			System.out.println("The Sleet admin console port (defaults to 2553).");
+			System.out.println();
 
 			System.out.println("--host-name=NAME [required]");
 			System.out.println("The host name of this server (e.g. myserver.com).");
@@ -72,6 +77,10 @@ public class Sleet {
 			System.out.println("--pop3-log=PATH");
 			System.out.println("The path to where POP3 transactions are logged.");
 			System.out.println();
+			
+			System.out.println("--admin-log=PATH");
+			System.out.println("The path to where Sleet admin console transactions are logged.");
+			System.out.println();
 
 			System.out.println("--version");
 			System.out.println("Prints the version.");
@@ -89,7 +98,7 @@ public class Sleet {
 		}
 
 		//check for non-existant arguments
-		Set<String> validArgs = new HashSet<String>(Arrays.asList(new String[] { "smtp-port", "smtp-msa-port", "pop3-port", "host-name", "database", "smtp-inbound-log", "smtp-outbound-log", "smtp-msa-log", "pop3-log", "version", "help" }));
+		Set<String> validArgs = new HashSet<String>(Arrays.asList(new String[] { "smtp-port", "smtp-msa-port", "pop3-port", "admin-port", "host-name", "database", "smtp-inbound-log", "smtp-outbound-log", "smtp-msa-log", "pop3-log", "admin-log", "version", "help" }));
 		Collection<String> invalidArgs = arguments.invalidArgs(validArgs);
 		if (!invalidArgs.isEmpty()) {
 			System.err.println("One or more non-existent arguments were specified:\n" + invalidArgs);
@@ -106,11 +115,13 @@ public class Sleet {
 		final int smtpPort = arguments.valueInt(null, "smtp-port", 25);
 		final int smtpMsaPort = arguments.valueInt(null, "smtp-msa-port", 587);
 		final int popPort = arguments.valueInt(null, "pop3-port", 110);
+		final int adminPort = arguments.valueInt(null, "admin-port", 2553);
 
 		String smtpInboundLog = arguments.value(null, "smtp-inbound-log");
 		String smtpOutboundLog = arguments.value(null, "smtp-outbound-log");
 		String smtpMsaLog = arguments.value(null, "smtp-msa-log");
 		String pop3Log = arguments.value(null, "pop3-log");
+		String adminLog = arguments.value(null, "admin-log");
 
 		//connect to the database
 		String dbPath = arguments.value(null, "database", "sleet-db");
@@ -200,5 +211,25 @@ public class Sleet {
 			}
 		};
 		smtpMsaThread.start();
+		
+		//start the admin console
+		final AdminConnectionListener adminServer = new AdminConnectionListener(dao);
+		adminServer.setHostName(hostName);
+		adminServer.setPort(adminPort);
+		if (adminLog != null) {
+			adminServer.setTransactionLogFile(new File(adminLog));
+		}
+		Thread adminThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					adminServer.start();
+				} catch (Exception e) {
+					logger.log(Level.SEVERE, "The Sleet admin console encountered an error.  Server terminated.", e);
+					throw new RuntimeException("Cannot start Sleet admin console on port " + adminPort + ".", e);
+				}
+			}
+		};
+		adminThread.start();
 	}
 }

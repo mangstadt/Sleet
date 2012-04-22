@@ -90,6 +90,14 @@ public interface DbDao {
 	 * @throws SQLException
 	 */
 	List<User> findUsers(String text) throws SQLException;
+	
+	void insertUser(User user) throws SQLException;
+	
+	void updateUser(User user) throws SQLException;
+	
+	void deleteUser(String username) throws SQLException;
+	
+	List<User> selectUsers() throws SQLException;
 
 	/**
 	 * Gets a mailing list.

@@ -66,7 +66,7 @@ public abstract class DirbyDbDao implements DbDao {
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("Database driver not on classpath.", e);
 		}
-		
+
 		//create the connection
 		if (create) {
 			jdbcUrl += ";create=true";
@@ -467,6 +467,68 @@ public abstract class DirbyDbDao implements DbDao {
 	}
 
 	@Override
+	public void insertUser(User user) throws SQLException {
+		PreparedStatement insertUser = null;
+		try {
+			insertUser = db.prepareStatement("INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)");
+			insertUser.setString(1, user.username);
+			insertUser.setString(2, user.password);
+			insertUser.setString(3, user.fullName);
+			insertUser.execute();
+		} finally {
+			closeStatements(insertUser);
+		}
+	}
+
+	@Override
+	public void updateUser(User user) throws SQLException {
+		PreparedStatement updateUser = null;
+		try {
+			updateUser = db.prepareStatement("UPDATE users SET username = ?, password = ?, full_name = ? WHERE id = ?");
+			updateUser.setString(1, user.username);
+			updateUser.setString(2, user.password);
+			updateUser.setString(3, user.fullName);
+			updateUser.setInt(4, user.id);
+			updateUser.execute();
+		} finally {
+			closeStatements(updateUser);
+		}
+	}
+
+	@Override
+	public void deleteUser(String username) throws SQLException {
+		PreparedStatement deleteUser = null;
+		try {
+			deleteUser = db.prepareStatement("DELETE FROM users WHERE username = ?");
+			deleteUser.setString(1, username);
+			deleteUser.execute();
+		} finally {
+			closeStatements(deleteUser);
+		}
+	}
+
+	@Override
+	public List<User> selectUsers() throws SQLException {
+		PreparedStatement selectUsers = null;
+		List<User> users = new ArrayList<User>();
+		try {
+			selectUsers = db.prepareStatement("SELECT * FROM users ORDER BY username");
+			ResultSet rs = selectUsers.executeQuery();
+			while (rs.next()) {
+				User user = new User();
+				user.id = rs.getInt("id");
+				user.username = rs.getString("username");
+				user.password = rs.getString("password");
+				user.fullName = rs.getString("full_name");
+				users.add(user);
+			}
+			return users;
+		} finally {
+			closeStatements(selectUsers);
+		}
+	}
+
+	@Override
 	public MailingList selectMailingList(String name) throws SQLException {
 		//all mailbox names are stored in lower case
 		name = name.toLowerCase();
@@ -503,63 +565,63 @@ public abstract class DirbyDbDao implements DbDao {
 		}
 	}
 
-//	@Override
-//	public Map<String, List<OutboundEmailGroup>> selectOutboundEmailGroups() throws SQLException, IOException {
-//		PreparedStatement groupQuery = null;
-//		PreparedStatement recipientsQuery = null;
-//		PreparedStatement emailQuery = null;
-//		PreparedStatement failuresQuery = null;
-//		try {
-//			Map<Integer, Email> emails = new HashMap<Integer, Email>();
-//			Map<String, List<OutboundEmailGroup>> groups = new HashMap<String, List<OutboundEmailGroup>>();
-//			groupQuery = db.prepareStatement("SELECT * FROM outbound_email_groups");
-//			recipientsQuery = db.prepareStatement("SELECT recipient FROM outbound_email_recipients WHERE outbound_email_group_id = ?");
-//			failuresQuery = db.prepareStatement("SELECT error FROM outbound_email_failures WHERE outbound_email_group_id = ? ORDER BY id");
-//			emailQuery = db.prepareStatement("SELECT * FROM emails WHERE id = ?");
-//			ResultSet groupRs = groupQuery.executeQuery();
-//			while (groupRs.next()) {
-//				OutboundEmailGroup group = new OutboundEmailGroup();
-//
-//				group.id = groupRs.getInt("id");
-//				group.host = groupRs.getString("host");
-//				group.attempts = groupRs.getInt("attempts");
-//				group.firstAttempt = groupRs.getTimestamp("first_attempt");
-//				group.prevAttempt = groupRs.getTimestamp("prev_attempt");
-//
-//				//get recipients
-//				recipientsQuery.setInt(1, group.id);
-//				ResultSet rs2 = recipientsQuery.executeQuery();
-//				while (rs2.next()) {
-//					group.recipients.add(new EmailAddress(rs2.getString("recipient")));
-//				}
-//
-//				//get failures
-//				failuresQuery.setInt(1, group.id);
-//				rs2 = failuresQuery.executeQuery();
-//				while (rs2.next()) {
-//					group.failures.add(rs2.getString("error"));
-//				}
-//
-//				//get email
-//				int emailId = groupRs.getInt("email_id");
-//				Email email = emails.get(emailId);
-//				if (email == null) {
-//					email = selectEmail(emailId);
-//				}
-//				group.email = email;
-//
-//				List<OutboundEmailGroup> list = groups.get(group.host);
-//				if (list == null) {
-//					list = new LinkedList<OutboundEmailGroup>();
-//					groups.put(group.host, list);
-//				}
-//				list.add(group);
-//			}
-//			return groups;
-//		} finally {
-//			closeStatements(groupQuery, recipientsQuery, emailQuery, failuresQuery);
-//		}
-//	}
+	//	@Override
+	//	public Map<String, List<OutboundEmailGroup>> selectOutboundEmailGroups() throws SQLException, IOException {
+	//		PreparedStatement groupQuery = null;
+	//		PreparedStatement recipientsQuery = null;
+	//		PreparedStatement emailQuery = null;
+	//		PreparedStatement failuresQuery = null;
+	//		try {
+	//			Map<Integer, Email> emails = new HashMap<Integer, Email>();
+	//			Map<String, List<OutboundEmailGroup>> groups = new HashMap<String, List<OutboundEmailGroup>>();
+	//			groupQuery = db.prepareStatement("SELECT * FROM outbound_email_groups");
+	//			recipientsQuery = db.prepareStatement("SELECT recipient FROM outbound_email_recipients WHERE outbound_email_group_id = ?");
+	//			failuresQuery = db.prepareStatement("SELECT error FROM outbound_email_failures WHERE outbound_email_group_id = ? ORDER BY id");
+	//			emailQuery = db.prepareStatement("SELECT * FROM emails WHERE id = ?");
+	//			ResultSet groupRs = groupQuery.executeQuery();
+	//			while (groupRs.next()) {
+	//				OutboundEmailGroup group = new OutboundEmailGroup();
+	//
+	//				group.id = groupRs.getInt("id");
+	//				group.host = groupRs.getString("host");
+	//				group.attempts = groupRs.getInt("attempts");
+	//				group.firstAttempt = groupRs.getTimestamp("first_attempt");
+	//				group.prevAttempt = groupRs.getTimestamp("prev_attempt");
+	//
+	//				//get recipients
+	//				recipientsQuery.setInt(1, group.id);
+	//				ResultSet rs2 = recipientsQuery.executeQuery();
+	//				while (rs2.next()) {
+	//					group.recipients.add(new EmailAddress(rs2.getString("recipient")));
+	//				}
+	//
+	//				//get failures
+	//				failuresQuery.setInt(1, group.id);
+	//				rs2 = failuresQuery.executeQuery();
+	//				while (rs2.next()) {
+	//					group.failures.add(rs2.getString("error"));
+	//				}
+	//
+	//				//get email
+	//				int emailId = groupRs.getInt("email_id");
+	//				Email email = emails.get(emailId);
+	//				if (email == null) {
+	//					email = selectEmail(emailId);
+	//				}
+	//				group.email = email;
+	//
+	//				List<OutboundEmailGroup> list = groups.get(group.host);
+	//				if (list == null) {
+	//					list = new LinkedList<OutboundEmailGroup>();
+	//					groups.put(group.host, list);
+	//				}
+	//				list.add(group);
+	//			}
+	//			return groups;
+	//		} finally {
+	//			closeStatements(groupQuery, recipientsQuery, emailQuery, failuresQuery);
+	//		}
+	//	}
 
 	@Override
 	public Map<String, List<OutboundEmailGroup>> selectOutboundEmailGroupsToSend(long transientRetryInterval, long retryInterval) throws SQLException, IOException {

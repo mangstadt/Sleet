@@ -47,7 +47,7 @@ CREATE TABLE recipients(
 /* The emails that each user received. */
 CREATE TABLE inbox_emails(
 	id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	user_id INTEGER NOT NULL REFERENCES users(id),
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	email_id INTEGER NOT NULL REFERENCES emails(id) ON DELETE CASCADE,
 	received TIMESTAMP NOT NULL
 );
@@ -55,7 +55,7 @@ CREATE TABLE inbox_emails(
 /* The emails that were successfully sent from the SMTP server. */
 CREATE TABLE outbox_emails(
 	id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-	user_id INTEGER NOT NULL REFERENCES users(id),
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	email_id INTEGER NOT NULL REFERENCES emails(id) ON DELETE CASCADE,
 	sent TIMESTAMP NOT NULL
 );

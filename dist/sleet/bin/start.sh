@@ -5,8 +5,10 @@ sleet.Sleet \
 --smtp-port=2550 \
 --smtp-msa-port=2551 \
 --pop3-port=2552 \
+--admin-port=2553 \
 --database=../db/dirby \
 --smtp-inbound-log=../logs/smtp-inbound-transactions.log \
 --smtp-msa-log=../logs/smtp-msa-transactions.log \
 --smtp-outbound-log=../logs/smtp-outbound-transactions.log \
---pop3-log=../logs/pop3-transactions.log
+--pop3-log=../logs/pop3-transactions.log \
+--admin-log=../logs/admin-transactions.log
