@@ -93,8 +93,6 @@ public class POP3ServerSocket {
 		toClient.print(response);
 		toClient.flush();
 
-		logger.fine(response);
-
 		transactionLog.server(response);
 	}
 
@@ -107,8 +105,6 @@ public class POP3ServerSocket {
 		String response = "-ERR " + msg + CRLF;
 		toClient.print(response);
 		toClient.flush();
-
-		logger.fine(response);
 		transactionLog.server(response);
 	}
 
