@@ -35,6 +35,9 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
     --pop3-port=PORT
     The POP3 server port (defaults to 110).
     
+    --admin-port=PORT
+    The Sleet admin console port (defaults to 2553).
+    
     --host-name=NAME [required]
     The host name of this server (e.g. myserver.com).
     This is what's used in email addresses destined for and coming from this server.
@@ -54,6 +57,9 @@ The main class, `sleet.Sleet`, takes a number of command-line arguments.  All ar
     
     --pop3-log=PATH
     The path to where POP3 transactions are logged.
+    
+    --admin-log=PATH
+    The path to where Sleet admin console transactions are logged.
     
     --version
     Prints the version.
