@@ -35,21 +35,21 @@ public class Sleet {
 			System.out.println("ARGUMENTS==============");
 			System.out.println();
 
-			System.out.println("--smtpPort=PORT");
+			System.out.println("--smtp-port=PORT");
 			System.out.println("The SMTP server port (defaults to 25).");
 			System.out.println();
 
-			System.out.println("--smtpMsaPort=PORT");
-			System.out.println("The SMTP Mail Submission port (defaults to 587).");
+			System.out.println("--smtp-msa-port=PORT");
+			System.out.println("The SMTP mail submission port (defaults to 587).");
 			System.out.println();
 
-			System.out.println("--pop3Port=PORT");
+			System.out.println("--pop3-port=PORT");
 			System.out.println("The POP3 server port (defaults to 110).");
 			System.out.println();
 
-			System.out.println("--hostName=NAME [required]");
-			System.out.println("The external host name of this server (e.g. myserver.com).");
-			System.out.println("This is what's used in email addresses coming from this server.");
+			System.out.println("--host-name=NAME [required]");
+			System.out.println("The host name of this server (e.g. myserver.com).");
+			System.out.println("This is what's used in email addresses destined for and coming from this server.");
 			System.out.println();
 
 			System.out.println("--database=PATH");
@@ -57,20 +57,20 @@ public class Sleet {
 			System.out.println("database (defaults to \"sleet-db\").");
 			System.out.println();
 
-			System.out.println("--smtp-server-log=PATH");
-			System.out.println("The path to where SMTP transactions that the server receives are logged.");
+			System.out.println("--smtp-inbound-log=PATH");
+			System.out.println("The path to where inbound SMTP transactions are logged.");
 			System.out.println();
 
-			System.out.println("--smtp-client-log=PATH");
-			System.out.println("The path to where SMTP transactions that the server sends are logged.");
+			System.out.println("--smtp-outbound-log=PATH");
+			System.out.println("The path to where outbound SMTP transactions are logged.");
 			System.out.println();
 			
 			System.out.println("--smtp-msa-log=PATH");
-			System.out.println("The path to where SMTP MSA transactions are logged.");
+			System.out.println("The path to where inbound SMTP mail submission transactions are logged.");
 			System.out.println();
 
 			System.out.println("--pop3-log=PATH");
-			System.out.println("The path to where POP3 transactions that the server receives are logged.");
+			System.out.println("The path to where POP3 transactions are logged.");
 			System.out.println();
 
 			System.out.println("--version");
@@ -89,7 +89,7 @@ public class Sleet {
 		}
 
 		//check for non-existant arguments
-		Set<String> validArgs = new HashSet<String>(Arrays.asList(new String[] { "smtpPort", "smtpMsaPort", "pop3Port", "hostName", "database", "smtp-server-log", "smtp-client-log", "smtp-msa-log", "pop3-log", "version", "help" }));
+		Set<String> validArgs = new HashSet<String>(Arrays.asList(new String[] { "smtp-port", "smtp-msa-port", "pop3-port", "host-name", "database", "smtp-inbound-log", "smtp-outbound-log", "smtp-msa-log", "pop3-log", "version", "help" }));
 		Collection<String> invalidArgs = arguments.invalidArgs(validArgs);
 		if (!invalidArgs.isEmpty()) {
 			System.err.println("One or more non-existent arguments were specified:\n" + invalidArgs);
@@ -97,20 +97,20 @@ public class Sleet {
 		}
 
 		//host name is required
-		final String hostName = arguments.value(null, "hostName");
+		final String hostName = arguments.value(null, "host-name");
 		if (hostName == null) {
 			System.err.println("A host name must be specified.");
 			System.exit(1);
 		}
 
-		final int smtpPort = arguments.valueInt(null, "smtpPort", 25);
-		final int smtpMsaPort = arguments.valueInt(null, "smtpMsaPort", 587);
-		final int popPort = arguments.valueInt(null, "pop3Port", 110);
+		final int smtpPort = arguments.valueInt(null, "smtp-port", 25);
+		final int smtpMsaPort = arguments.valueInt(null, "smtp-msa-port", 587);
+		final int popPort = arguments.valueInt(null, "pop3-port", 110);
 
-		String receivingTransactionFile = arguments.value(null, "smtp-server-log");
-		String sendingTransactionFile = arguments.value(null, "smtp-client-log");
-		String smtpMsaFile = arguments.value(null, "smtp-msa-log");
-		String pop3TransactionFile = arguments.value(null, "pop3-log");
+		String smtpInboundLog = arguments.value(null, "smtp-inbound-log");
+		String smtpOutboundLog = arguments.value(null, "smtp-outbound-log");
+		String smtpMsaLog = arguments.value(null, "smtp-msa-log");
+		String pop3Log = arguments.value(null, "pop3-log");
 
 		//connect to the database
 		String dbPath = arguments.value(null, "database", "sleet-db");
@@ -125,8 +125,8 @@ public class Sleet {
 		//start the mail sender
 		final MailSender mailSender = new MailSender(dao);
 		mailSender.setHostName(hostName);
-		if (sendingTransactionFile != null) {
-			mailSender.setTransactionLogFile(new File(sendingTransactionFile));
+		if (smtpOutboundLog != null) {
+			mailSender.setTransactionLogFile(new File(smtpOutboundLog));
 		}
 		Thread mailSenderThread = new Thread() {
 			@Override
@@ -145,8 +145,8 @@ public class Sleet {
 		final POP3ConnectionListener popServer = new POP3ConnectionListener(dao);
 		popServer.setHostName(hostName);
 		popServer.setPort(popPort);
-		if (pop3TransactionFile != null) {
-			popServer.setTransactionLogFile(new File(pop3TransactionFile));
+		if (pop3Log != null) {
+			popServer.setTransactionLogFile(new File(pop3Log));
 		}
 		Thread popThread = new Thread() {
 			@Override
@@ -154,7 +154,7 @@ public class Sleet {
 				try {
 					popServer.start();
 				} catch (Exception e) {
-					logger.log(Level.SEVERE, "The POP3 server encountered an error.  POP3 server terminated.", e);
+					logger.log(Level.SEVERE, "The POP3 server encountered an error.  Server terminated.", e);
 					throw new RuntimeException("Cannot start POP3 server on port " + popPort + ".", e);
 				}
 			}
@@ -165,8 +165,8 @@ public class Sleet {
 		final SMTPConnectionListener smtpServer = new SMTPConnectionListener(dao);
 		smtpServer.setHostName(hostName);
 		smtpServer.setPort(smtpPort);
-		if (receivingTransactionFile != null) {
-			smtpServer.setTransactionLogFile(new File(receivingTransactionFile));
+		if (smtpInboundLog != null) {
+			smtpServer.setTransactionLogFile(new File(smtpInboundLog));
 		}
 		Thread smtpThread = new Thread() {
 			@Override
@@ -174,7 +174,7 @@ public class Sleet {
 				try {
 					smtpServer.start();
 				} catch (Exception e) {
-					logger.log(Level.SEVERE, "The SMTP server encountered an error.  SMTP server terminated.", e);
+					logger.log(Level.SEVERE, "The SMTP server encountered an error.  Server terminated.", e);
 					throw new RuntimeException("Cannot start SMTP server on port " + smtpPort + ".", e);
 				}
 			}
@@ -185,8 +185,8 @@ public class Sleet {
 		final SMTPConnectionListener smtpMsaServer = new SMTPConnectionListener(dao, mailSender);
 		smtpMsaServer.setHostName(hostName);
 		smtpMsaServer.setPort(smtpMsaPort);
-		if (smtpMsaFile != null) {
-			smtpMsaServer.setTransactionLogFile(new File(smtpMsaFile));
+		if (smtpMsaLog != null) {
+			smtpMsaServer.setTransactionLogFile(new File(smtpMsaLog));
 		}
 		Thread smtpMsaThread = new Thread() {
 			@Override
@@ -194,8 +194,8 @@ public class Sleet {
 				try {
 					smtpMsaServer.start();
 				} catch (Exception e) {
-					logger.log(Level.SEVERE, "The SMTP MSA server encountered an error.  SMTP MSA server terminated.", e);
-					throw new RuntimeException("Cannot start SMTP MSA server on port " + smtpMsaPort + ".", e);
+					logger.log(Level.SEVERE, "The SMTP mail submission server encountered an error.  Server terminated.", e);
+					throw new RuntimeException("Cannot start SMTP mail submission server on port " + smtpMsaPort + ".", e);
 				}
 			}
 		};

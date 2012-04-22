@@ -26,33 +26,34 @@ The `start.sh` script will start the Sleet SMTP server on port 2550.  Mail submi
 
 The main class, `sleet.Sleet`, takes a number of command-line arguments.  All arguments are in "long form" for readability.
 
-    --smtpPort=PORT
+    --smtp-port=PORT
     The SMTP server port (defaults to 25).
     
-    --smtpMsaPort=PORT
-    The SMTP Mail Submission port (defaults to 587).
+    --smtp-msa-port=PORT
+    The SMTP mail submission port (defaults to 587).
     
-    --pop3Port=PORT
+    --pop3-port=PORT
     The POP3 server port (defaults to 110).
     
-    --hostName=NAME [required]
-    The external host name of this server (e.g. myserver.com).
-    This is what's used in email addresses coming from this server.
+    --host-name=NAME [required]
+    The host name of this server (e.g. myserver.com).
+    This is what's used in email addresses destined for and coming from this server.
     
     --database=PATH
-    The path to where the database will be stored or "MEM" to use an in-memory database. (defaults to "sleet-db").
+    The path to where the database will be stored or "MEM" to use an in-memory
+    database (defaults to "sleet-db").
     
-    --smtp-server-log=PATH
-    The path to where SMTP transactions that the server receives are logged.
+    --smtp-inbound-log=PATH
+    The path to where inbound SMTP transactions are logged.
     
-    --smtp-client-log=PATH
-    The path to where SMTP transactions that the server sends are logged.
+    --smtp-outbound-log=PATH
+    The path to where outbound SMTP transactions are logged.
     
     --smtp-msa-log=PATH
-    The path to where SMTP MSA transactions are logged.
+    The path to where inbound SMTP mail submission transactions are logged.
     
     --pop3-log=PATH
-    The path to where POP3 transactions that the server receives are logged.
+    The path to where POP3 transactions are logged.
     
     --version
     Prints the version.
