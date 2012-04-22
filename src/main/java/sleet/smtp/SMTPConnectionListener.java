@@ -239,7 +239,9 @@ public class SMTPConnectionListener {
 						List<String> messages = new ArrayList<String>();
 						messages.add(hostName + " Hello" + (params == null ? "" : " " + params));
 						messages.add("SIZE 1000000");
-						messages.add("AUTH PLAIN");
+						if (!mta){
+							messages.add("AUTH PLAIN");
+						}
 						messages.add("HELP");
 						//TODO extended status codes should be supported by MSAs (RFC-6409, p.12)
 						//TODO piplining should be supported by MSAs (RFC-6409, p.13)
