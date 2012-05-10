@@ -2,6 +2,8 @@ package sleet.admin;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -143,7 +145,48 @@ public class AdminConnectionListener {
 					String cmd = request.getCommand();
 					Map<String, String> params = request.getParameters();
 
-					if ("LIST_USERS".equals(cmd)) {
+					if ("HELP".equals(cmd)){
+						StringWriter sw = new StringWriter();
+						PrintWriter writer = new PrintWriter(sw);
+						writer.println("Help message is as follows:");
+						writer.println("Each command consists of the command name, followed by parameters.");
+						writer.println("Parameters are space-delimited and take the form of: NAME=VALUE");
+						writer.println("If VALUE has spaces in it, then it can be surrounded with double quotes.");
+						writer.println();
+						writer.println("Example: CREATE_USER username=fred password=secret fullname=\"Fred Flintstone\"");
+						writer.println();
+						writer.println("LIST_USERS");
+						writer.println("  Description: Displays all existing user accounts.");
+						writer.println("  Parameters:  none");
+						writer.println("CREATE_USER");
+						writer.println("  Description: Creates a new user account.");
+						writer.println("  Parameters:");
+						writer.println("     username     the username of the account.");
+						writer.println("     password     the password of the account.");
+						writer.println("     fullname     (optional) the user's full name.");
+						writer.println("MODIFY_USER");
+						writer.println("  Description: Modifies an existing user account.");
+						writer.println("  Parameters:");
+						writer.println("     username     the current username of the account.");
+						writer.println("     newusername  (optional) the account's new username.");
+						writer.println("     newpassword  (optional) the account's new password.");
+						writer.println("     newfullname  (optional) the account's new full name.");
+						writer.println("DELETE_USER");
+						writer.println("  Description: Deletes an existing user account.");
+						writer.println("  Parameters:");
+						writer.println("     username     the username of the account to delete.");
+						writer.println("SHUTDOWN");
+						writer.println("  Description: Shuts down the Sleet SMTP server.");
+						writer.println("  Parameters:  none");
+						writer.println("QUIT");
+						writer.println("  Description: Exits the admin console.");
+						writer.println("  Parameters:  none");
+						writer.println("HELP");
+						writer.println("  Description: Prints this help message.");
+						writer.println("  Parameters:  none");
+						serverSocket.sendSuccess(sw.toString());
+					}
+					else if ("LIST_USERS".equals(cmd)) {
 						try {
 							List<User> users = dao.selectUsers();
 							List<String> lines = new ArrayList<String>();
