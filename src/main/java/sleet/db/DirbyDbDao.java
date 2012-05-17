@@ -79,9 +79,10 @@ public abstract class DirbyDbDao implements DbDao {
 		if (create) {
 			logger.info("Database not found.  Creating the database...");
 			String sql = null;
+			SQLStatementReader in = null;
 			try {
 				Statement s = db.createStatement();
-				SQLStatementReader in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream("schema.sql", getClass())));
+				in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream("schema.sql", getClass())));
 				while ((sql = in.readStatement()) != null) {
 					s.execute(sql);
 				}
@@ -90,6 +91,8 @@ public abstract class DirbyDbDao implements DbDao {
 				throw new SQLException("Error creating database.", e);
 			} catch (SQLException e) {
 				throw new SQLException("Error executing SQL statement: " + sql, e);
+			} finally {
+				IOUtils.closeQuietly(in);
 			}
 			db.commit();
 		}
