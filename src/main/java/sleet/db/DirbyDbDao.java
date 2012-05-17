@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 
+import sleet.ClasspathUtils;
 import sleet.email.EmailAddress;
 import sleet.email.EmailData;
 
@@ -80,7 +81,7 @@ public abstract class DirbyDbDao implements DbDao {
 			String sql = null;
 			try {
 				Statement s = db.createStatement();
-				SQLStatementReader in = new SQLStatementReader(new InputStreamReader(DirbyDbDao.class.getResourceAsStream("schema.sql")));
+				SQLStatementReader in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream("schema.sql", getClass())));
 				while ((sql = in.readStatement()) != null) {
 					s.execute(sql);
 				}
