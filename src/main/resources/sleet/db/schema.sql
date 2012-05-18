@@ -1,3 +1,18 @@
+/*
+ * This SQL script will always contain the full database schema for the most
+ * recent version of the database.
+ * 
+ * Every time the schema changes:
+ * 1. Create a migration script (e.g. "migrate-5-6.sql").
+ * 2. Update the version number in DirbyDbDao.
+ */
+
+CREATE TABLE sleet(
+	--the database schema version
+	--used for updating existing databases as future versions of Sleet are released
+	db_schema_version INTEGER NOT NULL
+);
+
 CREATE TABLE users(
 	id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	username VARCHAR(100) NOT NULL,

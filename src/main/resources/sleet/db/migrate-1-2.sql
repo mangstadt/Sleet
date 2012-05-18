@@ -1,0 +1,1 @@
+--SQL code for updating the database schema from version 1 to 2 would go here

@@ -33,6 +33,11 @@ public abstract class DirbyDbDao implements DbDao {
 	private static final Logger logger = Logger.getLogger(DirbyDbDao.class.getName());
 
 	/**
+	 * The current version of the database schema.
+	 */
+	private static final int schemaVersion = 1;
+
+	/**
 	 * The database connection.
 	 */
 	private Connection db;
@@ -80,21 +85,117 @@ public abstract class DirbyDbDao implements DbDao {
 			logger.info("Database not found.  Creating the database...");
 			String sql = null;
 			SQLStatementReader in = null;
+			String schemaFileName = "schema.sql";
+			Statement statement = null;
 			try {
-				Statement s = db.createStatement();
-				in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream("schema.sql", getClass())));
+				in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream(schemaFileName, getClass())));
+				statement = db.createStatement();
 				while ((sql = in.readStatement()) != null) {
-					s.execute(sql);
+					statement.execute(sql);
 				}
-				s.close();
+				sql = null;
+				insertDbVersion(schemaVersion);
 			} catch (IOException e) {
 				throw new SQLException("Error creating database.", e);
 			} catch (SQLException e) {
+				if (sql == null){
+					throw e;
+				}
 				throw new SQLException("Error executing SQL statement: " + sql, e);
 			} finally {
 				IOUtils.closeQuietly(in);
+				if (statement != null) {
+					try {
+						statement.close();
+					} catch (SQLException e) {
+						//ignore
+					}
+				}
 			}
-			db.commit();
+			commit();
+		} else {
+			//update the database schema if it's not up to date
+			int version = selectDbVersion();
+			if (version < schemaVersion) {
+				logger.info("Database schema out of date.  Upgrading from version " + version + " to " + schemaVersion + ".");
+				String sql = null;
+				Statement statement = null;
+				try {
+					statement = db.createStatement();
+					while (version < schemaVersion) {
+						logger.info("Performing schema update from version " + version + " to " + (version + 1) + ".");
+						
+						String script = "migrate-" + version + "-" + (version + 1) + ".sql";
+						SQLStatementReader in = null;
+						try{
+							in = new SQLStatementReader(new InputStreamReader(ClasspathUtils.getResourceAsStream(script, getClass())));
+							while ((sql = in.readStatement()) != null) {
+								statement.execute(sql);
+							}
+							sql = null;
+						} finally {
+							IOUtils.closeQuietly(in);
+						}
+						
+						version++;
+					}
+					updateDbVersion(schemaVersion);
+				} catch (IOException e) {
+					rollback();
+					throw new SQLException("Error updating database schema.", e);
+				} catch (SQLException e) {
+					rollback();
+					if (sql == null){
+						throw e;
+					}
+					throw new SQLException("Error executing SQL statement during schema update: " + sql, e);
+				} finally {
+					if (statement != null) {
+						try {
+							statement.close();
+						} catch (SQLException e) {
+							//ignore
+						}
+					}
+				}
+				commit();
+			}
+		}
+	}
+	
+	@Override
+	public int selectDbVersion() throws SQLException {
+		PreparedStatement statement = null;
+		try {
+			statement = db.prepareStatement("SELECT db_schema_version FROM sleet");
+			ResultSet rs = statement.executeQuery();
+			return rs.next() ? rs.getInt("db_schema_version") : 0;
+		} finally {
+			closeStatements(statement);
+		}
+	}
+	
+	@Override
+	public void updateDbVersion(int version) throws SQLException {
+		PreparedStatement statement = null;
+		try {
+			statement = db.prepareStatement("UPDATE sleet SET db_schema_version = ?");
+			statement.setInt(1, version);
+			statement.execute();
+		} finally {
+			closeStatements(statement);
+		}
+	}
+	
+	@Override
+	public void insertDbVersion(int version) throws SQLException {
+		PreparedStatement statement = null;
+		try {
+			statement = db.prepareStatement("INSERT INTO sleet (db_schema_version) VALUES (?)");
+			statement.setInt(1, version);
+			statement.execute();
+		} finally {
+			closeStatements(statement);
 		}
 	}
 

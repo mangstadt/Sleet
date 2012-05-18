@@ -11,6 +11,28 @@ import java.util.Map;
  */
 public interface DbDao {
 	/**
+	 * Gets the database schema version.
+	 * @return the version number
+	 * @throws SQLException
+	 */
+	int selectDbVersion() throws SQLException;
+
+	/**
+	 * Updates the database schema version.
+	 * @param version the new version number
+	 * @throws SQLException
+	 */
+	void updateDbVersion(int version) throws SQLException;
+
+	/**
+	 * Sets the database schema version, inserting the necessary row in the
+	 * table.
+	 * @param version the version number
+	 * @throws SQLException
+	 */
+	void insertDbVersion(int version) throws SQLException;
+
+	/**
 	 * Inserts an email.
 	 * @param email the email to insert
 	 * @throws SQLException
@@ -90,13 +112,13 @@ public interface DbDao {
 	 * @throws SQLException
 	 */
 	List<User> findUsers(String text) throws SQLException;
-	
+
 	void insertUser(User user) throws SQLException;
-	
+
 	void updateUser(User user) throws SQLException;
-	
+
 	void deleteUser(String username) throws SQLException;
-	
+
 	List<User> selectUsers() throws SQLException;
 
 	/**
